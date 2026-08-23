@@ -1,5 +1,6 @@
 import { Resend } from "resend";
 import { BRAND, siteUrl } from "@/lib/brand";
+import { cleanHeader, escapeHtml } from "@/lib/security";
 
 const FROM = process.env.RESEND_FROM ?? `${BRAND.name} <noreply@${BRAND.domain}>`;
 
@@ -25,22 +26,27 @@ export async function sendNewApplicationEmail({
 }) {
   const resend = getResend();
   if (!resend) return;
+  const safeToName = escapeHtml(toName);
+  const safeApplicantName = escapeHtml(applicantName);
+  const safeApplicantEmail = escapeHtml(applicantEmail);
+  const safeCourseName = escapeHtml(courseName);
+  const safeApplicationId = escapeHtml(applicationId);
 
   await resend.emails.send({
     from: FROM,
     to: toEmail,
-    subject: `Ny ansökan till ${courseName}`,
+    subject: `Ny ansökan till ${cleanHeader(courseName)}`,
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
         <h2 style="color:${BRAND.colors.primary}">Ny ansökan mottagen</h2>
-        <p>Hej ${toName},</p>
-        <p><strong>${applicantName}</strong> (${applicantEmail}) har ansökt till kursen <strong>${courseName}</strong>.</p>
+        <p>Hej ${safeToName},</p>
+        <p><strong>${safeApplicantName}</strong> (${safeApplicantEmail}) har ansökt till kursen <strong>${safeCourseName}</strong>.</p>
         <p>Logga in på din portal för att granska ansökan.</p>
         <a href="${siteUrl()}/larare/ansokningar"
            style="display:inline-block;margin-top:12px;padding:10px 20px;background:${BRAND.colors.primary};color:white;border-radius:8px;text-decoration:none;font-weight:600">
           Granska ansökan
         </a>
-        <p style="margin-top:24px;color:#999;font-size:12px">Ansöknings-ID: ${applicationId}</p>
+        <p style="margin-top:24px;color:#999;font-size:12px">Ansöknings-ID: ${safeApplicationId}</p>
       </div>
     `,
   });
@@ -55,6 +61,7 @@ export async function sendPasswordResetEmail({
 }) {
   const resend = getResend();
   if (!resend) return;
+  const safeResetLink = escapeHtml(resetLink);
 
   await resend.emails.send({
     from: FROM,
@@ -71,7 +78,7 @@ export async function sendPasswordResetEmail({
             Klicka på knappen nedan för att välja ett nytt lösenord till ditt konto. Länken är giltig i 24 timmar.
           </p>
           <div style="text-align:center;margin:28px 0">
-            <a href="${resetLink}"
+            <a href="${safeResetLink}"
                style="display:inline-block;background:${BRAND.colors.primary};color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
               Välj nytt lösenord
             </a>
@@ -101,13 +108,16 @@ export async function sendApprovalEmail({
 }) {
   const resend = getResend();
   if (!resend) return;
+  const safeApplicantName = escapeHtml(applicantName);
+  const safeCourseName = escapeHtml(courseName);
+  const safePasswordSetupLink = passwordSetupLink ? escapeHtml(passwordSetupLink) : null;
 
-  const passwordBlock = passwordSetupLink
+  const passwordBlock = safePasswordSetupLink
     ? `
       <div style="background:#FAFAFA;border:1px solid #EEE;border-radius:10px;padding:20px;margin:14px 0">
         <p style="margin:0 0 6px;color:#666;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Skapa konto</p>
         <p style="margin:0 0 14px;color:${BRAND.colors.dark};font-weight:600">Sätt ditt lösenord och logga in i elevportalen</p>
-        <a href="${passwordSetupLink}"
+        <a href="${safePasswordSetupLink}"
            style="display:inline-block;background:white;color:${BRAND.colors.primary};border:2px solid ${BRAND.colors.primary};padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600">
           Skapa lösenord
         </a>
@@ -122,7 +132,7 @@ export async function sendApprovalEmail({
   await resend.emails.send({
     from: FROM,
     to: toEmail,
-    subject: `Din ansökan till ${courseName} är godkänd!`,
+    subject: `Din ansökan till ${cleanHeader(courseName)} är godkänd!`,
     html: `
       <div style="font-family:sans-serif;max-width:540px;margin:0 auto">
         <div style="background:linear-gradient(135deg,${BRAND.colors.primaryDark},${BRAND.colors.primary});padding:32px;border-radius:12px 12px 0 0;text-align:center">
@@ -130,9 +140,9 @@ export async function sendApprovalEmail({
           <p style="color:rgba(255,255,255,0.85);margin:6px 0 0">Din ansökan är godkänd</p>
         </div>
         <div style="padding:28px;background:#fff;border:1px solid #eee;border-radius:0 0 12px 12px">
-          <h2 style="color:${BRAND.colors.dark};margin-top:0">Assalamu alaikum, ${applicantName}!</h2>
+          <h2 style="color:${BRAND.colors.dark};margin-top:0">Assalamu alaikum, ${safeApplicantName}!</h2>
           <p style="color:#555;line-height:1.6">
-            Din ansökan till <strong>${courseName}</strong> är godkänd. ${intro}
+            Din ansökan till <strong>${safeCourseName}</strong> är godkänd. ${intro}
           </p>
           ${passwordBlock}
           <p style="color:#999;font-size:12px;text-align:center;margin-top:24px">
@@ -162,17 +172,21 @@ export async function sendApplicationStatusEmail({
 }) {
   const resend = getResend();
   if (!resend) return;
+  const safeApplicantName = escapeHtml(applicantName);
+  const safeCourseName = escapeHtml(courseName);
+  const safeRedirectCourseName = escapeHtml(redirectCourseName ?? "en annan kurs");
+  const safeNotes = notes ? escapeHtml(notes) : "";
 
   const subjects: Record<string, string> = {
-    approved: `Grattis! Din ansökan till ${courseName} har godkänts`,
-    rejected: `Svar på din ansökan till ${courseName}`,
+    approved: `Grattis! Din ansökan till ${cleanHeader(courseName)} har godkänts`,
+    rejected: `Svar på din ansökan till ${cleanHeader(courseName)}`,
     redirected: `Vi rekommenderar en annan kurs för dig`,
   };
 
   const messages: Record<string, string> = {
-    approved: `Vi är glada att meddela att din ansökan till <strong>${courseName}</strong> har <strong>godkänts</strong>! Vi kontaktar dig snart med uppstartsdetaljer.`,
-    rejected: `Tyvärr kan vi inte ta emot din ansökan till <strong>${courseName}</strong> just nu.`,
-    redirected: `Efter att ha granskat din ansökan till <strong>${courseName}</strong> rekommenderar vi att du börjar med <strong>${redirectCourseName ?? "en annan kurs"}</strong> som passar din nuvarande nivå bättre.`,
+    approved: `Vi är glada att meddela att din ansökan till <strong>${safeCourseName}</strong> har <strong>godkänts</strong>! Vi kontaktar dig snart med uppstartsdetaljer.`,
+    rejected: `Tyvärr kan vi inte ta emot din ansökan till <strong>${safeCourseName}</strong> just nu.`,
+    redirected: `Efter att ha granskat din ansökan till <strong>${safeCourseName}</strong> rekommenderar vi att du börjar med <strong>${safeRedirectCourseName}</strong> som passar din nuvarande nivå bättre.`,
   };
 
   await resend.emails.send({
@@ -182,9 +196,9 @@ export async function sendApplicationStatusEmail({
     html: `
       <div style="font-family:sans-serif;max-width:520px;margin:0 auto">
         <h2 style="color:${BRAND.colors.primary}">Svar på din ansökan</h2>
-        <p>Hej ${applicantName},</p>
+        <p>Hej ${safeApplicantName},</p>
         <p>${messages[status]}</p>
-        ${notes ? `<p style="background:#f9f9f9;padding:12px;border-radius:8px;color:#555"><em>"${notes}"</em></p>` : ""}
+        ${safeNotes ? `<p style="background:#f9f9f9;padding:12px;border-radius:8px;color:#555"><em>"${safeNotes}"</em></p>` : ""}
         <p style="margin-top:24px">Med vänliga hälsningar,<br/><strong>${BRAND.name}</strong></p>
       </div>
     `,

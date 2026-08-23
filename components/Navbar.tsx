@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
 
@@ -20,6 +20,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [auth, setAuth] = useState<AuthState | undefined>(undefined);
   const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     const supabase = createClient();
@@ -38,7 +39,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = "/";
+    router.replace("/");
+    router.refresh();
   };
 
   return (

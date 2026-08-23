@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
 
@@ -56,33 +56,35 @@ const navItems = [
 
 export default function LarareLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [userName, setUserName] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { window.location.href = "/logga-in"; return; }
+      if (!user) { router.replace("/logga-in"); return; }
       supabase.from("profiles").select("full_name, role").eq("id", user.id).single().then(({ data }) => {
         if (!data || !["teacher", "admin"].includes(data.role)) {
-          window.location.href = "/portal";
+          router.replace("/portal");
           return;
         }
         setUserName(data.full_name ?? user.email ?? "Lärare");
       });
     });
-  }, []);
+  }, [router]);
 
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = "/logga-in";
+    router.replace("/logga-in");
+    router.refresh();
   };
 
   const isActive = (href: string) =>
     href === "/larare" ? pathname === "/larare" : pathname.startsWith(href);
 
-  const Sidebar = () => (
+  const renderSidebar = () => (
     <aside className="flex flex-col h-full bg-white border-r border-gray-100 w-64">
       <div className="px-5 py-5 border-b border-gray-100">
         <Link href="/" className="flex items-center gap-2">
@@ -133,7 +135,7 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Desktop sidebar */}
       <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0">
-        <Sidebar />
+        {renderSidebar()}
       </div>
 
       {/* Mobile sidebar */}
@@ -141,7 +143,7 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="relative z-50 flex flex-col h-full w-64">
-            <Sidebar />
+            {renderSidebar()}
           </div>
         </div>
       )}

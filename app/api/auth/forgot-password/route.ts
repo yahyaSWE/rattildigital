@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { enforceRateLimit, normalizeEmail } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
-  const { email } = await req.json();
-  if (!email || typeof email !== "string" || !email.includes("@")) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Ogiltig förfrågan" }, { status: 400 });
+  }
+  const email = normalizeEmail(body.email);
+  if (!email) {
     return NextResponse.json({ error: "Ogiltig e-postadress" }, { status: 400 });
   }
+
+  const limited = await enforceRateLimit(req, "password-reset", 5, 900, email);
+  if (limited) return limited;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? new URL(req.url).origin;
   const admin = createAdminClient();

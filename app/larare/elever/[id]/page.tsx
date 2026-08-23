@@ -61,7 +61,10 @@ export default function ElevDetalj() {
     setLoading(false);
   }, [studentId]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
 
   const student = enrollments[0]?.student ?? null;
   const courses: { id: string; title: string }[] = [];

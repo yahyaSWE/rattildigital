@@ -1,15 +1,13 @@
 import type { MaterialRow } from "./types";
-import type { Course } from "@/lib/supabase/types";
 import { btnPrimary } from "./types";
 
 type Props = {
   materials: MaterialRow[];
-  courses: Course[];
   onUpload: () => void;
   onDelete: (id: string, url: string | null) => void;
 };
 
-export function MaterialTab({ materials, courses, onUpload, onDelete }: Props) {
+export function MaterialTab({ materials, onUpload, onDelete }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -62,7 +60,7 @@ export function MaterialTab({ materials, courses, onUpload, onDelete }: Props) {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 justify-end">
                           {mat.url && (
-                            <a href={mat.url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Öppna</a>
+                            <a href={`/api/admin/materials/${mat.id}/download`} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Öppna</a>
                           )}
                           <button onClick={() => onDelete(mat.id, mat.url)} className="text-xs text-gray-400 hover:text-red-500">Ta bort</button>
                         </div>

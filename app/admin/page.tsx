@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { BRAND } from "@/lib/brand";
 import type { Profile, Course } from "@/lib/supabase/types";
 import type { Tab, ApplicationRow, WaitlistRow, EnrollmentRow, MessageRow, MaterialRow, DaySchedule, LessonRow } from "./components/types";
@@ -97,7 +98,10 @@ export default function AdminPanel() {
     if (!apps.error) setApplications(apps);
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void load();
+  }, [load]);
 
   const toast = (msg: string) => { setFeedback(msg); setTimeout(() => setFeedback(""), 3500); };
 
@@ -308,7 +312,7 @@ export default function AdminPanel() {
             <h1 className="text-xl font-bold text-gray-900">Adminpanel</h1>
             <p className="text-xs text-gray-400">{BRAND.name} – hantera elever, kurser och lektioner</p>
           </div>
-          <a href="/" className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka till hemsidan</a>
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka till hemsidan</Link>
         </div>
       </div>
 
@@ -341,7 +345,7 @@ export default function AdminPanel() {
           <MessagesTab students={students} messages={messages} onMessage={openMsg} />
         )}
         {tab === "material" && (
-          <MaterialTab materials={materials} courses={courses} onUpload={() => { setMaterialForm({ title: "", course_id: courses[0]?.id ?? "", lesson_id: "", type: "pdf", file: null }); setShowMaterialModal(true); }} onDelete={deleteMaterial} />
+          <MaterialTab materials={materials} onUpload={() => { setMaterialForm({ title: "", course_id: courses[0]?.id ?? "", lesson_id: "", type: "pdf", file: null }); setShowMaterialModal(true); }} onDelete={deleteMaterial} />
         )}
         {tab === "waitlist" && (
           <WaitlistTab waitlist={waitlist} onDelete={deleteWaitlist} />
@@ -510,7 +514,7 @@ export default function AdminPanel() {
             <Field label="Fullständigt namn"><input className={inputCls} value={studentForm.full_name} onChange={(e) => setStudentForm({ ...studentForm, full_name: e.target.value })} placeholder="Fatima Svensson" /></Field>
             <Field label="E-postadress *"><input className={inputCls} type="email" value={studentForm.email} onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })} placeholder="fatima@example.com" /></Field>
             <Field label="Tillfälligt lösenord *"><input className={inputCls} type="password" value={studentForm.password} onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })} placeholder="Minst 6 tecken" /></Field>
-            <p className="text-xs text-gray-400">Eleven kan byta lösenord via "Glömt lösenord" på inloggningssidan.</p>
+            <p className="text-xs text-gray-400">Eleven kan byta lösenord via &quot;Glömt lösenord&quot; på inloggningssidan.</p>
             <div className="flex gap-2 pt-2">
               <button onClick={saveStudent} disabled={saving} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Skapar..." : "Skapa elev"}</button>
               <button onClick={() => setShowStudentModal(false)} className={btnSecondary}>Avbryt</button>

@@ -92,7 +92,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.href = "/logga-in";
+    router.replace("/logga-in");
+    router.refresh();
   };
 
   return (

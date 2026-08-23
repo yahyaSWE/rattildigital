@@ -1,13 +1,31 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendNewApplicationEmail } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
+import { cleanOptionalString, cleanString, enforceRateLimit, normalizeEmail } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
-  const { course_id, name, email, phone, address, postal_code, city, experience } = await req.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Ogiltig förfrågan" }, { status: 400 });
+  }
+
+  const course_id = cleanString(body.course_id, 64);
+  const name = cleanString(body.name, 120);
+  const email = normalizeEmail(body.email);
+  const phone = cleanString(body.phone, 40);
+  const address = cleanString(body.address, 200);
+  const postal_code = cleanString(body.postal_code, 20);
+  const city = cleanString(body.city, 100);
+  const experience = cleanOptionalString(body.experience, 2000);
 
   if (!course_id || !name || !email || !phone || !address || !postal_code || !city) {
-    return NextResponse.json({ error: "Obligatoriska fält saknas" }, { status: 400 });
+    return NextResponse.json({ error: "Kontrollera att alla obligatoriska fält är giltiga" }, { status: 400 });
   }
+
+  const limited = await enforceRateLimit(req, "application", 5, 3600, email);
+  if (limited) return limited;
 
   const admin = createAdminClient();
 
@@ -27,7 +45,7 @@ export async function POST(req: NextRequest) {
     .from("applications")
     .select("id")
     .eq("course_id", course_id)
-    .eq("email", email.toLowerCase())
+    .eq("email", email)
     .not("status", "eq", "rejected")
     .single();
 
@@ -39,18 +57,21 @@ export async function POST(req: NextRequest) {
     .from("applications")
     .insert({
       course_id,
-      name: name.trim(),
-      email: email.trim().toLowerCase(),
-      phone: phone.trim(),
-      address: address.trim(),
-      postal_code: postal_code.trim(),
-      city: city.trim(),
-      experience: experience?.trim() ?? null,
+      name,
+      email,
+      phone,
+      address,
+      postal_code,
+      city,
+      experience: experience || null,
     })
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("Application insert error:", error.message);
+    return NextResponse.json({ error: "Kunde inte spara ansökan" }, { status: 500 });
+  }
 
   // Send email to teacher if assigned
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

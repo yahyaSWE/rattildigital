@@ -1,46 +1,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import { BRAND, siteUrl } from "@/lib/brand";
 import { Resend } from "resend";
+import { cleanHeader, cleanOptionalString, cleanString, enforceRateLimit, escapeHtml, normalizeEmail } from "@/lib/security";
 
 // OBS: e-postklienter stödjer inte CSS-variabler – färger måste vara
 // literala hex-koder. De hämtas därför från BRAND.colors, inte globals.css.
 export async function POST(req: NextRequest) {
-  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
-    const { name, email, subject, message } = await req.json();
+    if (!process.env.RESEND_API_KEY) {
+      return NextResponse.json({ error: "E-posttjänsten är inte konfigurerad" }, { status: 503 });
+    }
+    const body = await req.json() as Record<string, unknown>;
+    const name = cleanString(body.name, 120);
+    const email = normalizeEmail(body.email);
+    const subject = cleanOptionalString(body.subject, 160);
+    const message = cleanString(body.message, 5000);
 
     if (!name || !email || !message) {
-      return NextResponse.json({ error: "Saknade fält" }, { status: 400 });
+      return NextResponse.json({ error: "Kontrollera formulärets fält" }, { status: 400 });
     }
 
+    const limited = await enforceRateLimit(req, "contact", 5, 900, email);
+    if (limited) return limited;
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const from = process.env.RESEND_FROM ?? `${BRAND.name} <noreply@${BRAND.domain}>`;
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject || "–");
+    const safeMessage = escapeHtml(message);
 
     // Skicka till oss
     await resend.emails.send({
       from,
       to: BRAND.email,
       replyTo: email,
-      subject: `[Kontaktformulär] ${subject || "Meddelande från hemsidan"}`,
+      subject: `[Kontaktformulär] ${cleanHeader(subject || "Meddelande från hemsidan")}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: ${BRAND.colors.primary};">Nytt meddelande via kontaktformuläret</h2>
           <table style="width: 100%; border-collapse: collapse;">
             <tr>
               <td style="padding: 8px 0; font-weight: bold; width: 100px;">Namn:</td>
-              <td style="padding: 8px 0;">${name}</td>
+              <td style="padding: 8px 0;">${safeName}</td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">E-post:</td>
-              <td style="padding: 8px 0;"><a href="mailto:${email}">${email}</a></td>
+              <td style="padding: 8px 0;"><a href="mailto:${safeEmail}">${safeEmail}</a></td>
             </tr>
             <tr>
               <td style="padding: 8px 0; font-weight: bold;">Ämne:</td>
-              <td style="padding: 8px 0;">${subject || "–"}</td>
+              <td style="padding: 8px 0;">${safeSubject}</td>
             </tr>
           </table>
           <hr style="border: 1px solid #eee; margin: 16px 0;" />
           <h3 style="color: #333;">Meddelande:</h3>
-          <p style="color: #555; line-height: 1.6; white-space: pre-line;">${message}</p>
+          <p style="color: #555; line-height: 1.6; white-space: pre-line;">${safeMessage}</p>
           <hr style="border: 1px solid #eee; margin: 16px 0;" />
           <p style="font-size: 12px; color: #999;">Skickat från ${BRAND.domain}</p>
         </div>
@@ -59,7 +74,7 @@ export async function POST(req: NextRequest) {
             <p style="color: rgba(255,255,255,0.8); margin: 8px 0 0;">${BRAND.tagline}</p>
           </div>
           <div style="padding: 32px; background: #fff; border: 1px solid #eee; border-radius: 0 0 12px 12px;">
-            <h2 style="color: ${BRAND.colors.dark};">Assalamu alaikum, ${name}!</h2>
+            <h2 style="color: ${BRAND.colors.dark};">Assalamu alaikum, ${safeName}!</h2>
             <p style="color: #555; line-height: 1.6;">
               Tack för ditt meddelande. Vi har mottagit det och återkommer inom 24 timmar.
             </p>

@@ -85,7 +85,7 @@ objektet i synk med `:root` i `globals.css`.
 │   ├── approval.ts               # Godkännandeflöde för ansökningar
 │   ├── lessons.ts                # Expandering av veckoschema
 │   └── supabase/                 # Klienter, typer, behörighetskontroller
-├── middleware.ts                 # Auth-skydd för /portal, /larare, /admin
+├── proxy.ts                      # Auth-skydd för /portal, /larare, /admin
 └── supabase/
     ├── schema.sql                # Komplett schema – kör denna
     └── seed.sql                  # Exempeldata (valfritt)

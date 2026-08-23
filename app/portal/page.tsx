@@ -2,7 +2,26 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { expandWeeklySchedule } from "@/lib/lessons";
+import { expandWeeklySchedule, type WeeklySchedule } from "@/lib/lessons";
+
+type DashboardEnrollment = {
+  id: string;
+  course_id: string;
+  status: string;
+  course: {
+    title: string;
+    meeting_link: string | null;
+    weekly_schedule: WeeklySchedule | null;
+  } | null;
+};
+
+type DashboardLesson = {
+  id: string;
+  title: string;
+  scheduled_at: string | null;
+  duration_minutes: number;
+  meeting_link: string | null;
+};
 
 export default async function PortalDashboard() {
   const supabase = await createClient();
@@ -21,7 +40,7 @@ export default async function PortalDashboard() {
     .eq("student_id", user.id)
     .eq("status", "active");
 
-  const activeEnrollments = enrollments ?? [];
+  const activeEnrollments = (enrollments ?? []) as unknown as DashboardEnrollment[];
   const courseIds = activeEnrollments.map((e) => e.course_id);
 
   // Hämta lärarens senaste anteckning (läxa + vad ni gjorde) per kurs.
@@ -87,8 +106,7 @@ export default async function PortalDashboard() {
   const latestMessage = messages?.[0];
 
   // Slå ihop konkreta lektioner från databasen med virtuella från weekly_schedule
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const virtualLessons = activeEnrollments.flatMap((e: any) => {
+  const virtualLessons = activeEnrollments.flatMap((e) => {
     const c = e.course;
     if (!c) return [];
     return expandWeeklySchedule(
@@ -98,9 +116,11 @@ export default async function PortalDashboard() {
       4,
     );
   });
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const upcomingLessons = [...(dbLessons ?? []), ...virtualLessons]
-    .sort((a: any, b: any) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+  const upcomingLessons: DashboardLesson[] = [
+    ...((dbLessons ?? []) as unknown as DashboardLesson[]),
+    ...virtualLessons,
+  ]
+    .sort((a, b) => new Date(a.scheduled_at ?? 0).getTime() - new Date(b.scheduled_at ?? 0).getTime())
     .slice(0, 4);
 
   return (

@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/supabase/require-admin";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
-  const { supabase, user, error } = await requireAdmin();
+  const { user, error } = await requireAdmin();
   if (error) return error;
 
   const { recipient_id, subject, content } = await req.json();
   if (!recipient_id || !content)
     return NextResponse.json({ error: "recipient_id och content krävs" }, { status: 400 });
 
-  const { data, error: err } = await supabase!
+  const admin = createAdminClient();
+  const { data, error: err } = await admin
     .from("messages")
     .insert({ sender_id: user!.id, recipient_id, subject: subject ?? null, content })
     .select()
