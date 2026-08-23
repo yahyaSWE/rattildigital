@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
@@ -68,9 +67,7 @@ export default function Login() {
       {/* Right panel - form */}
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:bg-white lg:rounded-l-3xl">
         <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8 lg:bg-transparent lg:rounded-none lg:shadow-none lg:p-0">
-          {/* Logo */}
-          <Link href="/" className="flex flex-col items-center gap-2 mb-8">
-            <Image src={BRAND.logo} alt={BRAND.name} width={64} height={64} className="object-contain" />
+            <Link href="/" className="flex flex-col items-center mb-8">
             <p className="font-bold text-xl" style={{ color: "var(--primary)" }}>
               {BRAND.name}
             </p>

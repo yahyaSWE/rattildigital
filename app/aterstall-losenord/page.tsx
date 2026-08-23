@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { BRAND } from "@/lib/brand";
 import Link from "next/link";
-import Image from "next/image";
 
 export default function AterstallLosenord() {
   const [email, setEmail] = useState("");
@@ -25,8 +24,7 @@ export default function AterstallLosenord() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--gradient-dark)" }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <Link href="/" className="flex items-center gap-3 mb-8">
-          <Image src={BRAND.logo} alt={BRAND.name} width={40} height={40} className="object-contain" />
+          <Link href="/" className="flex items-center mb-8">
           <p className="font-bold" style={{ color: "var(--primary)" }}>{BRAND.name}</p>
         </Link>
 

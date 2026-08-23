@@ -27,12 +27,6 @@ export const BRAND = {
   /** Domän utan protokoll, för visning i text */
   domain: "rattildigital.com",
 
-  /** Sökväg till logotypen i /public */
-  logo: "/images/logo.png",
-
-  /** Alt-text för logotypen */
-  logoAlt: "Rattil Digital Academy logotyp",
-
   /**
    * Literala hex-koder för e-postmallar. Måste spegla :root i globals.css.
    * CSS-variabler fungerar inte i Gmail, Outlook m.fl.

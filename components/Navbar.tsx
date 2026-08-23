@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
@@ -48,16 +47,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-6">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <Image
-              src={BRAND.logo}
-              alt={BRAND.logoAlt}
-              width={48}
-              height={48}
-              className="object-contain w-12 h-12"
-              priority
-            />
+          <Link href="/" className="flex items-center shrink-0">
             <span
               className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap"
               style={{ color: "var(--primary)" }}

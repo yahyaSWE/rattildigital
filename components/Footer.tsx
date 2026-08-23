@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { BRAND } from "@/lib/brand";
 
 const pageLinks = [
@@ -21,16 +20,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center gap-3 mb-4">
-              <div className="w-14 h-14 rounded-xl bg-white p-1.5 flex items-center justify-center shrink-0">
-                <Image
-                  src={BRAND.logo}
-                  alt={BRAND.logoAlt}
-                  width={52}
-                  height={52}
-                  className="object-contain w-full h-full"
-                />
-              </div>
+            <Link href="/" className="flex items-center mb-4">
               <div>
                 <p className="font-bold text-lg leading-tight">{BRAND.name}</p>
                 <p className="text-xs" style={{ color: "var(--primary-on-dark)" }}>{BRAND.tagline}</p>

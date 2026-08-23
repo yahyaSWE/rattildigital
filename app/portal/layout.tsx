@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BRAND } from "@/lib/brand";
@@ -104,8 +103,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         }`}
       >
         <div className="p-6 border-b border-gray-100">
-          <Link href="/" className="flex items-center gap-3">
-            <Image src={BRAND.logo} alt={BRAND.name} width={36} height={36} className="object-contain" />
+            <Link href="/" className="flex items-center">
             <div>
               <p className="font-bold text-sm leading-tight" style={{ color: "var(--primary)" }}>
                 {BRAND.name}

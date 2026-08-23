@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { BRAND } from "@/lib/brand";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SattLosenord() {
@@ -85,8 +84,7 @@ export default function SattLosenord() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--gradient-dark)" }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-        <Link href="/" className="flex flex-col items-center gap-2 mb-8">
-          <Image src={BRAND.logo} alt={BRAND.name} width={56} height={56} className="object-contain" />
+          <Link href="/" className="flex flex-col items-center mb-8">
           <p className="font-bold" style={{ color: "var(--primary)" }}>
             {BRAND.name}
           </p>
