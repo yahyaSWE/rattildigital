@@ -1,28 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { createClient } from "@/lib/supabase/server";
-import { BRAND } from "@/lib/brand";
 
-async function getStats() {
-  try {
-    const supabase = await createClient();
-    const [{ count: students }, { count: teachers }, { count: courses }] = await Promise.all([
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "student"),
-      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("role", "teacher"),
-      supabase.from("courses").select("*", { count: "exact", head: true }).eq("is_active", true),
-    ]);
-    return {
-      students: students ?? 0,
-      teachers: teachers ?? 0,
-      courses: courses ?? 0,
-    };
-  } catch {
-    return { students: 0, teachers: 0, courses: 0 };
-  }
-}
-
-/* TODO(brand): all copy on this page is placeholder text. */
 const heroChecks = [
   "Live Online Lessons",
   "One-to-One Classes",
@@ -45,8 +24,8 @@ const offerings = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
       </svg>
     ),
-    title: "Program One",
-    desc: "Placeholder text. Describe the first of your main programmes in roughly two lines.",
+    title: "Quran Reading",
+    desc: "Build a strong foundation in reading the Holy Quran correctly using a gradual and structured approach suitable for both children and adults.",
   },
   {
     icon: (
@@ -54,8 +33,8 @@ const offerings = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
       </svg>
     ),
-    title: "Program Two",
-    desc: "Placeholder text. Describe the second of your main programmes in roughly two lines.",
+    title: "Tajweed",
+    desc: "Master the rules of Quranic recitation and improve your pronunciation with detailed instruction and continuous practice.",
   },
   {
     icon: (
@@ -63,15 +42,25 @@ const offerings = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
-    title: "Program Three",
-    desc: "Placeholder text. Describe the third of your main programmes in roughly two lines.",
+    title: "Quran Memorization",
+    desc: "Memorize the Quran with a personalized revision plan and continuous support from experienced teachers.",
+  },
+  {
+    icon: (
+      <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+      </svg>
+    ),
+    title: "Arabic Language",
+    desc: "Develop your Arabic speaking, reading, listening, and writing skills through interactive lessons tailored to your level.",
   },
 ];
 
 const steps = [
-  { step: "1", title: "Choose your programme", desc: "Browse our programmes and pick the level that suits you best." },
-  { step: "2", title: "Send your application", desc: "Fill in the form and we will get back to you as soon as it has been reviewed." },
-  { step: "3", title: "Start learning", desc: "Log in to the student portal and get going with your teacher." },
+  { step: "1", title: "Book a Free Trial", desc: "Choose a suitable time and schedule your free trial lesson. We'll learn about your goals and answer your questions." },
+  { step: "2", title: "Meet Your Teacher", desc: "Attend your live online lesson, meet your teacher, and receive an assessment of your current level." },
+  { step: "3", title: "Receive Your Study Plan", desc: "Based on your level and objectives, we'll create a personalized learning plan with suitable lesson times." },
+  { step: "4", title: "Start Learning", desc: "Begin your regular classes, monitor your progress, and continue learning with confidence at your own pace." },
 ];
 
 const portalFeatures = [
@@ -86,7 +75,7 @@ const faqs = [
   { q: "What happens if I miss a lesson?", a: "If you miss a lesson you can catch up on what you missed through the student portal." },
   { q: "What if the teacher has to cancel a lesson?", a: "Your teacher will do their best to reschedule the lesson for another time." },
   { q: "Can I apply to a programme that is full?", a: "Yes — you will be placed on the waiting list and we will contact you when a place opens up." },
-  { q: "Are the programmes suitable for all ages?", a: "Placeholder answer — state which age groups you accept." },
+  { q: "Who can join Rattil Digital Academy?", a: "Our academy welcomes children, teenagers, and adults from all over the world. Lessons are tailored to each student's level and goals." },
   { q: "How does payment work?", a: "We send invoicing details separately once your application has been approved." },
 ];
 
@@ -98,10 +87,7 @@ function CheckIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default async function Home() {
-  const stats = await getStats();
-  const courseLabel = stats.courses > 0 ? String(stats.courses) : "3";
-
+export default function Home() {
   return (
     <>
       <Navbar />
@@ -120,24 +106,24 @@ export default async function Home() {
                   style={{ backgroundColor: "var(--accent-light)", color: "var(--accent-dark)" }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: "var(--accent-dark)" }} />
-                  Enrolment open
+                  Free trial lesson
                 </div>
 
                 <h1
                   className="text-4xl sm:text-5xl lg:text-[3.4rem] font-bold leading-[1.1] mb-6"
                   style={{ color: "var(--primary)" }}
                 >
-                  Main headline describing what you offer
+                  Learn Quran &amp; Arabic Online With Qualified Teachers
                 </h1>
 
                 <p className="text-base sm:text-lg text-text-muted leading-relaxed mb-9 max-w-xl">
-                  Placeholder text. Two or three sentences that explain what you teach, who it is for,
-                  and why a visitor should choose you. Keep it concrete and easy to scan.
+                  Personalized one-to-one Quran and Arabic lessons for children, adults, and families.
+                  Study from anywhere in the world with experienced teachers, flexible schedules, and a learning plan tailored to your goals.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-10">
                   <Link
-                    href="/programs"
+                    href="/programs#available-programs"
                     className="inline-flex items-center justify-center text-base font-semibold text-white px-7 py-3.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
                     style={{ backgroundColor: "var(--accent)" }}
                   >
@@ -182,7 +168,7 @@ export default async function Home() {
                   ))}
                 </ul>
                 <Link
-                  href="/programs"
+                  href="/programs#available-programs"
                   className="block w-full text-center text-sm font-semibold text-white px-5 py-3 rounded-lg transition-all hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: "var(--primary)" }}
                 >
@@ -197,13 +183,11 @@ export default async function Home() {
         <section className="py-14 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-wrap justify-center items-start gap-12 sm:gap-20 text-center">
-              {/* TODO(brand): student and teacher counts are placeholders. Set your real
-                  numbers, or read them from stats.students / stats.teachers above.
-                  "Active programmes" already comes from the database. */}
               {[
-                { value: "–", label: "Happy students" },
-                { value: "–", label: "Experienced teachers" },
-                { value: courseLabel, label: "Active programmes" },
+                { value: "1:1", label: "Private lessons" },
+                { value: "100%", label: "Online learning" },
+                { value: "24/7", label: "Flexible scheduling" },
+                { value: "Free", label: "Trial lesson" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-3xl font-bold" style={{ color: "var(--primary)" }}>{stat.value}</p>
@@ -218,12 +202,12 @@ export default async function Home() {
         <section className="py-20" style={{ backgroundColor: "var(--surface-muted)" }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
-              <h2 className="text-3xl font-bold mb-4" style={{ color: "var(--primary)" }}>What we offer</h2>
+              <h2 className="text-3xl font-bold mb-4" style={{ color: "var(--primary)" }}>Our Programs</h2>
               <p className="text-text-muted max-w-xl mx-auto">
-                Short text summarising what you offer and what makes you different.
+                Choose the learning path that best matches your goals. Our structured programs help you succeed through personalized one-to-one instruction.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {offerings.map((item) => (
                 <div key={item.title} className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-md transition-shadow">
                   <div
@@ -245,9 +229,9 @@ export default async function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-14">
               <h2 className="text-3xl font-bold mb-4" style={{ color: "var(--primary)" }}>How it works</h2>
-              <p className="text-text-muted max-w-xl mx-auto">Three simple steps to get started.</p>
+              <p className="text-text-muted max-w-2xl mx-auto">Getting started with Rattil Digital Academy is simple. Begin your learning journey with confidence and the support of qualified teachers.</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {steps.map((item) => (
                 <div key={item.step} className="flex flex-col items-center text-center">
                   <div
@@ -372,13 +356,13 @@ export default async function Home() {
         {/* Closing CTA */}
         <section className="py-20" style={{ background: "var(--gradient-dark)" }}>
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
+            <h2 className="text-3xl font-bold text-white mb-4">Your Journey Begins with One Lesson</h2>
             <p className="text-white/60 mb-8 text-lg">
-              A closing line that encourages the visitor to take the next step with {BRAND.name}.
+              Experience our teaching approach before making any commitment. Meet your teacher, explore our learning environment, and discover a personalized path toward your Quran and Arabic goals.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/programs"
+                href="/programs#available-programs"
                 className="inline-flex items-center justify-center font-semibold text-white px-8 py-3.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
                 style={{ backgroundColor: "var(--accent)" }}
               >

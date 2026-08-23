@@ -13,19 +13,21 @@ export const BRAND = {
   name: "Rattil Digital Academy",
 
   /** Kort undertext under logotypen */
-  // TODO(brand): bekräfta tagline
   tagline: "Quran & Arabic Online",
 
   /** Kontaktadress som visas publikt och i mejlsidfötter */
-  // TODO(brand): byt till er riktiga adress
-  email: "info@rattildigital.se",
+  email: "contact@rattildigital.com",
+
+  /** WhatsApp-nummer som visas publikt */
+  phone: "+46 72 017 17 16",
+
+  /** Telefonnumret i länkvänligt format */
+  phoneHref: "+46720171716",
 
   /** Domän utan protokoll, för visning i text */
-  // TODO(brand): byt till er riktiga domän
-  domain: "rattildigital.se",
+  domain: "rattildigital.com",
 
   /** Sökväg till logotypen i /public */
-  // TODO(brand): ersätt public/images/logo.png med Rattil-loggan
   logo: "/images/logo.png",
 
   /** Alt-text för logotypen */

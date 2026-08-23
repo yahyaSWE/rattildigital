@@ -11,6 +11,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
+  { href: "/teachers", label: "Teachers" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -115,7 +116,7 @@ export default function Navbar() {
                   Student Portal
                 </Link>
                 <Link
-                  href="/programs"
+                  href="/programs#available-programs"
                   className="text-sm font-semibold text-white px-5 py-2.5 rounded-lg transition-all hover:opacity-90 active:scale-95 whitespace-nowrap"
                   style={{ backgroundColor: "var(--accent)" }}
                 >
@@ -187,7 +188,7 @@ export default function Navbar() {
                   Student Portal
                 </Link>
                 <Link
-                  href="/programs"
+                  href="/programs#available-programs"
                   onClick={() => setOpen(false)}
                   className="block text-sm font-semibold text-white text-center px-4 py-2.5 rounded-lg"
                   style={{ backgroundColor: "var(--accent)" }}

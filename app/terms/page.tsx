@@ -3,8 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BRAND } from "@/lib/brand";
 
-/* TODO(brand): These terms are inherited boilerplate. Have them reviewed against how
-   you actually operate — and by a lawyer — before launch. */
 export default function Terms() {
   return (
     <>
@@ -16,7 +14,7 @@ export default function Terms() {
             style={{ backgroundColor: "var(--primary-light)" }}
           >
             <h1 className="text-4xl font-bold mb-3" style={{ color: "var(--primary)" }}>Terms and Conditions</h1>
-            <p className="text-text-muted text-sm">Last updated: May 2026</p>
+            <p className="text-text-muted text-sm">Last updated: August 2026</p>
           </div>
         </section>
 
@@ -44,7 +42,6 @@ export default function Terms() {
               </div>
 
               <div>
-                {/* TODO(brand): check this against your actual invoicing routine before launch. */}
                 <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>3. Payment</h2>
                 <p>
                   Programme fees are invoiced in advance. Invoicing details are sent separately once

@@ -3,8 +3,6 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BRAND } from "@/lib/brand";
 
-/* TODO(brand): This policy is inherited boilerplate. Review it against how you
-   actually process data — and have it checked — before launch. */
 export default function Privacy() {
   return (
     <>
@@ -16,13 +14,15 @@ export default function Privacy() {
             style={{ backgroundColor: "var(--primary-light)" }}
           >
             <h1 className="text-4xl font-bold mb-3" style={{ color: "var(--primary)" }}>Privacy Policy</h1>
-            <p className="text-text-muted text-sm">Last updated: May 2026</p>
+            <p className="text-text-muted text-sm">Last updated: August 2026</p>
           </div>
         </section>
 
         <section className="pb-20 pt-6">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="space-y-10 text-text leading-relaxed">
+
+              <p>Your privacy is important to us. This Privacy Policy explains how {BRAND.name} collects, uses, and protects your personal information.</p>
 
               <div>
                 <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>1. Data controller</h2>
@@ -78,7 +78,6 @@ export default function Privacy() {
               </div>
 
               <div>
-                {/* TODO(brand): extend this list if you add further service providers. */}
                 <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>6. Third parties</h2>
                 <p>We share data with the following service providers:</p>
                 <ul className="list-disc pl-6 mt-3 space-y-2">
@@ -123,7 +122,12 @@ export default function Privacy() {
               </div>
 
               <div>
-                <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>9. Contact</h2>
+                <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>9. Children&apos;s privacy</h2>
+                <p>Many of our students are children. Personal information relating to children is provided by a parent or legal guardian. Parents or guardians remain responsible for supervising their child&apos;s participation and communication with the academy.</p>
+              </div>
+
+              <div>
+                <h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>10. Contact</h2>
                 <p>
                   For questions about this policy, contact us at{" "}
                   <a href={`mailto:${BRAND.email}`} className="underline" style={{ color: "var(--primary)" }}>

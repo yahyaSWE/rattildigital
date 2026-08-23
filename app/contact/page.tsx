@@ -45,10 +45,10 @@ export default function Contact() {
             style={{ backgroundColor: "var(--primary-light)" }}
           >
             <h1 className="text-4xl sm:text-5xl font-bold mb-6" style={{ color: "var(--primary)" }}>
-              Contact
+              Contact Us
             </h1>
             <p className="text-text-muted text-lg max-w-2xl mx-auto">
-              Have a question? Get in touch and we will reply within one working day.
+              We are here to answer your questions and help you begin your Quran and Arabic learning journey. Feel free to contact us at any time.
             </p>
           </div>
         </section>
@@ -59,8 +59,8 @@ export default function Contact() {
               {/* Contact details */}
               <div className="lg:col-span-2 space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--primary)" }}>Contact details</h2>
-                  <p className="text-text-muted text-sm">We are here to answer your questions.</p>
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--primary)" }}>Get In Touch</h2>
+                  <p className="text-text-muted text-sm">Whether you have questions about our programs, trial lessons, schedules, or teachers, our team will be happy to assist you.</p>
                 </div>
 
                 <div className="space-y-4">
@@ -77,6 +77,24 @@ export default function Contact() {
                       ),
                     },
                     {
+                      label: "WhatsApp",
+                      value: (
+                        <a href={`https://wa.me/${BRAND.phoneHref.replace("+", "")}`} className="text-sm font-medium text-text hover:text-primary">
+                          {BRAND.phone}
+                        </a>
+                      ),
+                      icon: (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.5 4.49a1 1 0 01-.5 1.21l-2.26 1.13a11 11 0 005.52 5.52l1.13-2.26a1 1 0 011.21-.5l4.49 1.5a1 1 0 01.68.95V19a2 2 0 01-2 2h-1C9.72 21 3 14.28 3 6V5z" />
+                      ),
+                    },
+                    {
+                      label: "Languages",
+                      value: <p className="text-sm font-medium text-text">Arabic, English &amp; Swedish</p>,
+                      icon: (
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5h12M9 3v2m1.05 9.5A18.02 18.02 0 016 9m7 11l4-9 4 9m-1.5-3h-5M12 5c-.7 4.2-3.2 7.7-7 10" />
+                      ),
+                    },
+                    {
                       label: "Response time",
                       value: <p className="text-sm font-medium text-text">Within 24 hours</p>,
                       icon: (
@@ -84,7 +102,7 @@ export default function Contact() {
                       ),
                     },
                     {
-                      label: "Teaching",
+                      label: "Teaching Mode",
                       value: <p className="text-sm font-medium text-text">100% online</p>,
                       icon: (
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
@@ -112,7 +130,8 @@ export default function Contact() {
               {/* Contact form */}
               <div className="lg:col-span-3">
                 <div className="bg-white rounded-2xl border border-gray-100 p-8">
-                  <h2 className="text-2xl font-bold mb-6" style={{ color: "var(--primary)" }}>Send a message</h2>
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--primary)" }}>Send Us a Message</h2>
+                  <p className="text-sm text-text-muted mb-6">Complete the form below and our team will reply as soon as possible.</p>
 
                   {status === "success" ? (
                     <div className="text-center py-12">
@@ -174,7 +193,7 @@ export default function Contact() {
                           required
                           value={form.message}
                           onChange={(e) => setForm({ ...form, message: e.target.value })}
-                          placeholder="Tell us a little about yourself and what you are interested in..."
+                          placeholder="Tell us about yourself and include your country, age, the program you are interested in, your preferred language and preferred lesson time..."
                           rows={5}
                           className={`${inputCls} resize-none`}
                         />

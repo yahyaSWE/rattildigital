@@ -9,18 +9,16 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-// TODO(brand): description och keywords är platshållare – skriv er egen SEO-text.
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: `${BRAND.name} – ${BRAND.tagline}`,
-  description:
-    `${BRAND.name} erbjuder undervisning online med kvalificerade lärare, flexibla tider och ett upplägg anpassat efter dina mål.`,
-  keywords: ["online kurs", "distansundervisning", "utbildning"],
+  description: `Personalized one-to-one Quran and Arabic lessons for children, adults, and families with qualified teachers and flexible schedules.`,
+  keywords: ["Quran online", "Arabic online", "Tajweed", "Quran memorization", "online Quran classes"],
   openGraph: {
     url: "/",
     title: `${BRAND.name} – ${BRAND.tagline}`,
-    description: `${BRAND.name} erbjuder undervisning online med kvalificerade lärare.`,
-    locale: "sv_SE",
+    description: "Learn Quran and Arabic online through personalized one-to-one lessons with qualified teachers.",
+    locale: "en_GB",
     type: "website",
   },
 };
@@ -31,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="sv" className={`${inter.variable} h-full`}>
+    <html lang="en" className={`${inter.variable} h-full`}>
       <body className="min-h-full flex flex-col antialiased">
         <ScrollToTop />
         {children}

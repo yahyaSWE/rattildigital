@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { createClient } from "@/lib/supabase/client";
@@ -60,16 +61,18 @@ const LEVEL_LABELS: Record<string, string> = {
   advanced: "Advanced",
 };
 
-/* TODO(brand): review these answers against how you actually run things. */
 const faqs = [
-  { q: "How are the lessons delivered?", a: "All teaching takes place online over video call. You only need a computer, tablet or phone with a camera and microphone." },
-  { q: "What happens if I miss a lesson?", a: "If you miss a lesson you can catch up on what you missed through the student portal." },
-  { q: "What if the teacher has to cancel a lesson?", a: "Your teacher will do their best to reschedule the lesson for another time." },
-  { q: "Can I apply to a programme that is full?", a: "Yes — you will be placed on the waiting list and we will contact you when a place opens up." },
-  { q: "Are the programmes suitable for all ages?", a: "Placeholder answer — state which age groups you accept." },
-  { q: "How does payment work?", a: "We send invoicing details separately once your application has been approved." },
-  { q: "Why is billing done per period?", a: "Placeholder answer — explain your billing periods and the reasoning behind them." },
-  { q: "What if I want to stop before the period ends?", a: "Placeholder answer — explain your cancellation and refund terms." },
+  { q: "Who can join Rattil Digital Academy?", a: "Our academy welcomes children, teenagers, and adults from all over the world. Lessons are tailored to each student's level and goals." },
+  { q: "Do I need previous knowledge?", a: "No. We teach complete beginners as well as intermediate and advanced students." },
+  { q: "How are the lessons delivered?", a: "All lessons are conducted live online through interactive one-to-one sessions with qualified teachers." },
+  { q: "Is the trial lesson really free?", a: "Yes. Your first lesson is completely free with no obligation to enroll afterward." },
+];
+
+const programPaths = [
+  { title: "Quran Reading", href: "/programs/quran-reading", text: "Learn to read the Holy Quran correctly from the very beginning using a structured step-by-step approach.", points: ["Arabic Alphabet", "Letter Pronunciation", "Reading Fluency", "Personal Guidance"] },
+  { title: "Tajweed", href: "/programs/tajweed", text: "Master the rules of Quran recitation and improve pronunciation with experienced teachers.", points: ["Makharij", "Tajweed Rules", "Error Correction", "Beautiful Recitation"] },
+  { title: "Quran Memorization", href: "/programs/quran-memorization", text: "Follow a personalized memorization and revision plan designed around your goals.", points: ["Daily Hifz Plan", "Revision Sessions", "Progress Tracking", "Continuous Motivation"] },
+  { title: "Arabic Language", href: "/programs/arabic-language", text: "Develop your speaking, listening, reading, and writing skills through interactive online lessons.", points: ["Modern Standard Arabic", "Conversation Practice", "Grammar", "Reading & Writing"] },
 ];
 
 const inputCls =
@@ -298,7 +301,6 @@ export default function Programs() {
                 </div>
               ) : (
                 <div className="px-6 py-5 space-y-4 overflow-y-auto">
-                  {/* TODO(brand): confirm this matches your actual invoicing routine */}
                   <div className="rounded-xl p-4 text-sm" style={{ backgroundColor: "var(--primary-light)" }}>
                     <p className="font-semibold mb-1" style={{ color: "var(--primary)" }}>Good to know</p>
                     <p className="text-text-muted">
@@ -451,17 +453,27 @@ export default function Programs() {
             style={{ backgroundColor: "var(--primary-light)" }}
           >
             <h1 className="text-4xl sm:text-5xl font-bold mb-6" style={{ color: "var(--primary)" }}>
-              Programs &amp; Pricing
+              Our Programs
             </h1>
             <p className="text-text-muted text-lg max-w-2xl mx-auto">
-              Choose the programme that matches your level and book a free trial lesson to get started.
+              Discover personalized online programs that help students of all ages build confidence in Quran recitation, memorization, Tajweed, and the Arabic language through engaging one-to-one lessons.
             </p>
           </div>
         </section>
 
-        {/* Programme cards */}
-        <section className="pb-20 pt-4" style={{ backgroundColor: "var(--surface)" }}>
+        <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12"><h2 className="text-3xl font-bold mb-4" style={{ color: "var(--primary)" }}>Choose Your Learning Path</h2><p className="text-text-muted max-w-3xl mx-auto">Whether you are taking your first steps in learning the Quran or looking to strengthen your Arabic language skills, our flexible programs are designed to meet your individual goals and learning pace.</p></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {programPaths.map((program) => <article key={program.href} className="rounded-2xl border border-gray-100 p-7 flex flex-col"><h2 className="text-xl font-bold mb-3" style={{ color: "var(--primary)" }}>{program.title}</h2><p className="text-sm text-text-muted leading-relaxed mb-5">{program.text}</p><ul className="space-y-2 text-sm text-text-muted mb-6">{program.points.map((point) => <li key={point}>✓ {point}</li>)}</ul><Link href={program.href} className="mt-auto font-semibold text-sm" style={{ color: "var(--primary)" }}>Learn More →</Link></article>)}
+            </div>
+          </div>
+        </section>
+
+        {/* Programme cards */}
+        <section id="available-programs" className="pb-20 pt-16" style={{ backgroundColor: "var(--surface-muted)" }}>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12"><h2 className="text-3xl font-bold mb-4" style={{ color: "var(--primary)" }}>Available Programs &amp; Pricing</h2><p className="text-text-muted">Book your free assessment lesson and receive a personalized study plan.</p></div>
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {[1, 2, 3].map((i) => (
