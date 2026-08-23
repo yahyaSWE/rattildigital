@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/* ============================================================
+   VARUMÄRKESPALETT
+   Detta är enda stället där färgvärden ska stå. Byt värdena här
+   så slår ändringen igenom i hela appen – publika sidor, portal,
+   lärarvy och admin.
+
+   Undantag: lib/email.ts måste använda literala hex-koder,
+   eftersom CSS-variabler inte fungerar i e-postklienter.
+   Färgerna där ligger samlade i BRAND-konstanten i lib/brand.ts.
+   ============================================================ */
+:root {
+  /* --- Primärfärg: marinblå. Rubriker, navigering, ikoner, ramar --- */
+  --primary: #1B3B5F;
+  --primary-dark: #142C47;
+  --primary-deep: #0D1E31;
+  /* Varm cremeton för tonade sektioner och ikonrutor */
+  --primary-light: #F6F3EA;
+  --primary-muted: #E3E9F1;
+  --primary-border: #D5DEE8;
+  --primary-bright: #2F5F91;
+  /* Läses mot mörk bakgrund – guld mot marinblått */
+  --primary-on-dark: #C9A46B;
+
+  /* --- Accentfärg: guld. Primära uppmaningsknappar --- */
+  --accent: #C9A46B;
+  --accent-dark: #AE8A52;
+  --accent-light: #F3EBDC;
+
+  /* Neutraler */
+  --dark: #142C47;
+  --text: #2D3B4A;
+  --text-muted: #6E7C8C;
+  --border: #E5E7EB;
+  --surface: #FFFFFF;
+  --surface-muted: #FAF9F6;
+
+  /* Sammansatta bakgrunder */
+  --gradient-dark: linear-gradient(135deg, var(--dark) 0%, var(--primary-deep) 100%);
+  --gradient-hero: linear-gradient(135deg, var(--primary-deep) 0%, var(--dark) 55%, var(--primary) 100%);
+  --gradient-primary: linear-gradient(90deg, var(--accent), var(--accent-dark));
+
+  /* Typografi */
+  --font-brand: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+/* Exponerar paletten som Tailwind-klasser: bg-primary, text-primary,
+   border-primary, ring-primary, accent-primary, from-primary, ...
+   `inline` gör att klasserna pekar direkt på :root-variablerna ovan,
+   så ett värdebyte där räcker. */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-deep: var(--primary-deep);
+  --color-primary-light: var(--primary-light);
+  --color-primary-muted: var(--primary-muted);
+  --color-primary-border: var(--primary-border);
+  --color-primary-bright: var(--primary-bright);
+  --color-primary-on-dark: var(--primary-on-dark);
+  --color-accent: var(--accent);
+  --color-accent-dark: var(--accent-dark);
+  --color-accent-light: var(--accent-light);
+  --color-dark: var(--dark);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+
+  --font-sans: var(--font-brand);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-brand);
+  color: var(--text);
+  background: var(--surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 3px;
+}
