@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 import type { Profile, Course } from "@/lib/supabase/types";
 import type { Tab, ApplicationRow, WaitlistRow, EnrollmentRow, MessageRow, MaterialRow, DaySchedule, LessonRow } from "./components/types";
 import { inputCls, btnPrimary, btnSecondary } from "./components/types";
@@ -341,9 +341,12 @@ export default function AdminPanel() {
 
       <div className="bg-white border-b border-gray-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Adminpanel</h1>
-            <p className="text-xs text-gray-400">{BRAND.name} – hantera elever, kurser och lektioner</p>
+          <div className="flex items-center gap-3">
+            <BrandLogo className="h-14 w-auto" priority />
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">Adminpanel</h1>
+              <p className="text-xs text-gray-400">Hantera elever, kurser och lektioner</p>
+            </div>
           </div>
           <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka till hemsidan</Link>
         </div>

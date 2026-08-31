@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -47,13 +47,8 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-6">
-          <Link href="/" className="flex items-center shrink-0">
-            <span
-              className="text-lg sm:text-xl font-bold tracking-tight whitespace-nowrap"
-              style={{ color: "var(--primary)" }}
-            >
-              {BRAND.name}
-            </span>
+          <Link href="/" className="flex items-center shrink-0" aria-label="Rattil Digital Academy – startsida">
+            <BrandLogo className="h-16 w-auto" priority />
           </Link>
 
           {/* Desktop nav */}

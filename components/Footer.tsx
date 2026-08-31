@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const pageLinks = [
   { href: "/", label: "Home" },
@@ -20,11 +21,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Brand */}
           <div>
-            <Link href="/" className="flex items-center mb-4">
-              <div>
-                <p className="font-bold text-lg leading-tight">{BRAND.name}</p>
-                <p className="text-xs" style={{ color: "var(--primary-on-dark)" }}>{BRAND.tagline}</p>
-              </div>
+            <Link href="/" className="inline-flex items-center mb-4" aria-label="Rattil Digital Academy – startsida">
+              <BrandLogo className="h-28 w-auto" />
             </Link>
             <p className="text-sm text-white/50 leading-relaxed">
               Personalized one-to-one Quran and Arabic lessons for children, adults, and families worldwide.

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -84,10 +84,8 @@ export default function SattLosenord() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--gradient-dark)" }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-          <Link href="/" className="flex flex-col items-center mb-8">
-          <p className="font-bold" style={{ color: "var(--primary)" }}>
-            {BRAND.name}
-          </p>
+        <Link href="/" className="flex flex-col items-center mb-8" aria-label="Rattil Digital Academy – startsida">
+          <BrandLogo className="h-24 w-auto" priority />
         </Link>
 
         {status === "checking" && (

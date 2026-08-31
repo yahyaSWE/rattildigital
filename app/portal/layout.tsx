@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navItems = [
   {
@@ -102,14 +102,10 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="p-6 border-b border-gray-100">
-            <Link href="/" className="flex items-center">
-            <div>
-              <p className="font-bold text-sm leading-tight" style={{ color: "var(--primary)" }}>
-                {BRAND.name}
-              </p>
-              <p className="text-[10px] text-gray-400">Elevportal</p>
-            </div>
+        <div className="p-4 border-b border-gray-100">
+          <Link href="/" className="flex flex-col items-center" aria-label="Rattil Digital Academy – startsida">
+            <BrandLogo className="h-20 w-auto" priority />
+            <span className="text-[10px] text-gray-400">Elevportal</span>
           </Link>
         </div>
 

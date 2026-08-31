@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 import Link from "next/link";
 
 export default function AterstallLosenord() {
@@ -24,8 +24,8 @@ export default function AterstallLosenord() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6" style={{ background: "var(--gradient-dark)" }}>
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
-          <Link href="/" className="flex items-center mb-8">
-          <p className="font-bold" style={{ color: "var(--primary)" }}>{BRAND.name}</p>
+        <Link href="/" className="flex justify-center mb-8" aria-label="Rattil Digital Academy – startsida">
+          <BrandLogo className="h-24 w-auto" priority />
         </Link>
 
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Återställ lösenord</h1>

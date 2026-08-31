@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import { BRAND } from "@/lib/brand";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const navItems = [
   {
@@ -86,12 +86,11 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
 
   const renderSidebar = () => (
     <aside className="flex flex-col h-full bg-white border-r border-gray-100 w-64">
-      <div className="px-5 py-5 border-b border-gray-100">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: "var(--primary)" }}>{BRAND.name.charAt(0)}</div>
-          <span className="font-bold text-gray-900 text-sm">{BRAND.name}</span>
+      <div className="px-5 py-4 border-b border-gray-100">
+        <Link href="/" className="flex flex-col items-center" aria-label="Rattil Digital Academy – startsida">
+          <BrandLogo className="h-20 w-auto" priority />
+          <span className="text-xs text-gray-400 mt-1">Lärarportal</span>
         </Link>
-        <p className="text-xs text-gray-400 mt-1 ml-10">Lärarportal</p>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
