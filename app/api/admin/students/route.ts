@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/supabase/require-admin";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { provisionManualStudent } from "@/lib/approval";
+import { cleanString, normalizeEmail } from "@/lib/security";
 
 export async function GET() {
   const { supabase, error } = await requireAdmin();
@@ -20,20 +22,22 @@ export async function POST(req: NextRequest) {
   const { error } = await requireAdmin();
   if (error) return error;
 
-  const { email, full_name, password } = await req.json();
-  if (!email || !password)
-    return NextResponse.json({ error: "E-post och lösenord krävs" }, { status: 400 });
+  const body = await req.json();
+  const email = normalizeEmail(body.email);
+  const fullName = cleanString(body.full_name, 120);
+  const courseId = cleanString(body.course_id, 100);
+  if (!email || !fullName || !courseId) {
+    return NextResponse.json({ error: "Namn, giltig e-postadress och kurs krävs" }, { status: 400 });
+  }
 
-  const adminClient = createAdminClient();
-  const { data, error: createErr } = await adminClient.auth.admin.createUser({
+  const result = await provisionManualStudent({
     email,
-    password,
-    email_confirm: true,
-    user_metadata: { full_name: full_name ?? "" },
+    fullName,
+    courseId,
+    expandCapacity: body.expand_capacity === true,
   });
-
-  if (createErr) return NextResponse.json({ error: createErr.message }, { status: 500 });
-  return NextResponse.json(data.user);
+  if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
+  return NextResponse.json(result);
 }
 
 export async function PATCH(req: NextRequest) {

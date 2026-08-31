@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   runApprovalFlow,
   resendApprovalInstructions,
+  provisionManualStudent,
   type ApplicationWithCourse,
   type ApprovalDependencies,
   type ApprovalRepository,
@@ -332,5 +333,71 @@ describe("Stripe-fritt ansökningsflöde", () => {
     expect(result).toMatchObject({ status: 409 });
     expect(repository.enrollments).toHaveLength(2);
     expect(approvalEmail).not.toHaveBeenCalled();
+  });
+
+  it("skapar en manuell elev med aktiv kursplats och inloggningsmejl", async () => {
+    const { repository, dependencies, approvalEmail } = setup();
+
+    const result = await provisionManualStudent({
+      fullName: "Manuell Elev",
+      email: "  MANUELL@EXAMPLE.COM ",
+      courseId: "course-1",
+    }, dependencies);
+
+    expect(result).toMatchObject({ ok: true, enrollment_status: "active", active_count_increased: true });
+    expect(repository.profiles.get("manuell@example.com")).toBeDefined();
+    expect(repository.enrollments).toHaveLength(1);
+    expect(approvalEmail).toHaveBeenCalledWith(expect.objectContaining({
+      toEmail: "manuell@example.com",
+      applicantName: "Manuell Elev",
+      courseName: "Kurs 1",
+    }));
+    expect(repository.statusUpdates).toEqual([]);
+  });
+
+  it("återanvänder en manuellt vald elevs aktiva kursplats utan dubblett", async () => {
+    const { repository, dependencies, approvalEmail } = setup();
+    repository.profiles.set("student@example.com", { id: "student-existing" });
+    repository.enrollments.push({ id: "enrollment-existing", studentId: "student-existing", courseId: "course-1", status: "active" });
+
+    const result = await provisionManualStudent({
+      fullName: "Test Elev",
+      email: "student@example.com",
+      courseId: "course-1",
+    }, dependencies);
+
+    expect(result).toMatchObject({ ok: true, enrollment_id: "enrollment-existing", active_count_increased: false });
+    expect(repository.enrollments).toHaveLength(1);
+    expect(approvalEmail).toHaveBeenCalledOnce();
+  });
+
+  it("kräver ett explicit val för manuell elev när kursen är full", async () => {
+    const { repository, dependencies, approvalEmail } = setup();
+    fillCourse(repository, "course-1");
+
+    const result = await provisionManualStudent({
+      fullName: "Manuell Elev",
+      email: "manuell@example.com",
+      courseId: "course-1",
+    }, dependencies);
+
+    expect(result).toMatchObject({ status: 409 });
+    expect(repository.profiles.has("manuell@example.com")).toBe(false);
+    expect(approvalEmail).not.toHaveBeenCalled();
+  });
+
+  it("utökar en full kurs med exakt en plats för en manuell elev", async () => {
+    const { repository, dependencies } = setup();
+    fillCourse(repository, "course-1");
+
+    const result = await provisionManualStudent({
+      fullName: "Manuell Elev",
+      email: "manuell@example.com",
+      courseId: "course-1",
+      expandCapacity: true,
+    }, dependencies);
+
+    expect(result).toMatchObject({ ok: true, capacity_expanded: true, new_capacity: 3 });
+    expect(repository.courses.get("course-1")?.max_participants).toBe(3);
   });
 });

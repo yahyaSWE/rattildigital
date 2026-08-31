@@ -69,8 +69,8 @@ export default function AdminPanel() {
 
   const [courseForm, setCourseForm] = useState({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", weekly_schedule: defaultDays() });
   const [bulkForm, setBulkForm] = useState({ course_id: "", title_prefix: "Lektion", start_date: "", weeks: "4", duration_minutes: "60", meeting_link: "", days: defaultDays() });
-  const [studentForm, setStudentForm] = useState({ email: "", full_name: "", password: "" });
-  const [enrollForm, setEnrollForm] = useState({ student_id: "", course_id: "" });
+  const [studentForm, setStudentForm] = useState({ email: "", full_name: "", course_id: "", expand_capacity: false });
+  const [enrollForm, setEnrollForm] = useState({ student_id: "", course_id: "", expand_capacity: false });
   const [msgForm, setMsgForm] = useState({ subject: "", content: "" });
   const [materialForm, setMaterialForm] = useState({ title: "", course_id: "", lesson_id: "", type: "pdf", file: null as File | null });
   const [uploadProgress, setUploadProgress] = useState(false);
@@ -181,7 +181,14 @@ export default function AdminPanel() {
     setSaving(true);
     const res = await fetch("/api/admin/students", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(studentForm) });
     setSaving(false);
-    if (res.ok) { setShowStudentModal(false); load(); toast("Elev skapad!"); }
+    if (res.ok) {
+      const result = await res.json();
+      setShowStudentModal(false);
+      load();
+      toast(result.active_count_increased === false
+        ? "Kursplatsen var redan aktiv. Ett nytt inloggningsmejl har skickats."
+        : "Eleven är aktiv och inloggningsmejlet har skickats.");
+    }
     else { const d = await res.json(); toast(d.error ?? "Något gick fel."); }
   };
   const deleteStudent = async (id: string) => {
@@ -200,7 +207,14 @@ export default function AdminPanel() {
     setSaving(true);
     const res = await fetch("/api/admin/enrollments", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(enrollForm) });
     setSaving(false);
-    if (res.ok) { setShowEnrollModal(false); load(); toast("Elev tillagd i kurs!"); }
+    if (res.ok) {
+      const result = await res.json();
+      setShowEnrollModal(false);
+      load();
+      toast(result.active_count_increased === false
+        ? "Kursplatsen var redan aktiv. Ett nytt inloggningsmejl har skickats."
+        : "Eleven är aktiv och inloggningsmejlet har skickats.");
+    }
     else { const d = await res.json(); toast(d.error ?? "Något gick fel."); }
   };
   const removeEnroll = async (id: string) => {
@@ -294,6 +308,16 @@ export default function AdminPanel() {
   const totalRevenue = enrollments
     .filter((e) => e.status === "active")
     .reduce((sum, e) => sum + ((e.course as { price_sek?: number } | null)?.price_sek ?? 0), 0);
+  const activeCourses = courses.filter((course) => course.is_active);
+  const selectedStudentCourse = courses.find((course) => course.id === studentForm.course_id);
+  const selectedEnrollCourse = courses.find((course) => course.id === enrollForm.course_id);
+  const selectedEnrollmentAlreadyActive = enrollments.some((enrollment) => enrollment.student_id === enrollForm.student_id
+    && enrollment.course_id === enrollForm.course_id
+    && enrollment.status === "active");
+  const courseIsFull = (course: Course | undefined) => course?.max_participants != null
+    && (course.enrolled_count ?? 0) >= course.max_participants;
+  const studentCourseFull = courseIsFull(selectedStudentCourse);
+  const enrollCourseFull = courseIsFull(selectedEnrollCourse) && !selectedEnrollmentAlreadyActive;
 
   const tabs: [Tab, string][] = [
     ["overview", "Översikt"],
@@ -339,7 +363,7 @@ export default function AdminPanel() {
           <OverviewTab students={students} courses={courses} enrollments={enrollments} lessons={lessons} totalRevenue={totalRevenue} />
         )}
         {tab === "students" && (
-          <StudentsTab students={students} enrollments={enrollments} onNewStudent={() => { setStudentForm({ email: "", full_name: "", password: "" }); setShowStudentModal(true); }} onEnroll={() => { setEnrollForm({ student_id: "", course_id: "" }); setShowEnrollModal(true); }} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} onRemoveEnroll={removeEnroll} />
+          <StudentsTab students={students} enrollments={enrollments} onNewStudent={() => { setStudentForm({ email: "", full_name: "", course_id: "", expand_capacity: false }); setShowStudentModal(true); }} onEnroll={() => { setEnrollForm({ student_id: "", course_id: "", expand_capacity: false }); setShowEnrollModal(true); }} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} onRemoveEnroll={removeEnroll} />
         )}
         {tab === "teachers" && (
           <TeachersTab students={students} courses={courses} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} />
@@ -520,12 +544,24 @@ export default function AdminPanel() {
       {showStudentModal && (
         <Modal title="Ny elev" onClose={() => setShowStudentModal(false)}>
           <div className="space-y-4">
-            <Field label="Fullständigt namn"><input className={inputCls} value={studentForm.full_name} onChange={(e) => setStudentForm({ ...studentForm, full_name: e.target.value })} placeholder="Fatima Svensson" /></Field>
+            <Field label="Fullständigt namn *"><input className={inputCls} value={studentForm.full_name} onChange={(e) => setStudentForm({ ...studentForm, full_name: e.target.value })} placeholder="Fatima Svensson" /></Field>
             <Field label="E-postadress *"><input className={inputCls} type="email" value={studentForm.email} onChange={(e) => setStudentForm({ ...studentForm, email: e.target.value })} placeholder="fatima@example.com" /></Field>
-            <Field label="Tillfälligt lösenord *"><input className={inputCls} type="password" value={studentForm.password} onChange={(e) => setStudentForm({ ...studentForm, password: e.target.value })} placeholder="Minst 6 tecken" /></Field>
-            <p className="text-xs text-gray-400">Eleven kan byta lösenord via &quot;Glömt lösenord&quot; på inloggningssidan.</p>
+            <Field label="Kurs *">
+              <select className={inputCls} value={studentForm.course_id} onChange={(e) => setStudentForm({ ...studentForm, course_id: e.target.value, expand_capacity: false })}>
+                <option value="">Välj aktiv kurs...</option>
+                {activeCourses.map((course) => <option key={course.id} value={course.id}>{course.title} ({course.enrolled_count ?? 0}/{course.max_participants ?? "∞"})</option>)}
+              </select>
+            </Field>
+            {activeCourses.length === 0 && <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">Skapa och aktivera först en kurs innan du lägger till eleven.</p>}
+            {studentCourseFull && selectedStudentCourse && (
+              <label className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 cursor-pointer">
+                <input type="checkbox" checked={studentForm.expand_capacity} onChange={(e) => setStudentForm({ ...studentForm, expand_capacity: e.target.checked })} className="mt-0.5 h-4 w-4 accent-amber-600" />
+                <span>Kursen är full ({selectedStudentCourse.enrolled_count ?? 0}/{selectedStudentCourse.max_participants}). Utöka kursens kapacitet med 1 plats för den här eleven.</span>
+              </label>
+            )}
+            <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">Kontot skapas eller återanvänds automatiskt. Eleven får direkt en aktiv kursplats och ett mejl med en säker länk för att välja lösenord.</p>
             <div className="flex gap-2 pt-2">
-              <button onClick={saveStudent} disabled={saving} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Skapar..." : "Skapa elev"}</button>
+              <button onClick={saveStudent} disabled={saving || !studentForm.full_name.trim() || !studentForm.email.trim() || !studentForm.course_id || (studentCourseFull && !studentForm.expand_capacity)} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Skapar..." : "Skapa och skicka inloggning"}</button>
               <button onClick={() => setShowStudentModal(false)} className={btnSecondary}>Avbryt</button>
             </div>
           </div>
@@ -539,17 +575,25 @@ export default function AdminPanel() {
             <Field label="Elev *">
               <select className={inputCls} value={enrollForm.student_id} onChange={(e) => setEnrollForm({ ...enrollForm, student_id: e.target.value })}>
                 <option value="">Välj elev...</option>
-                {students.map((s) => <option key={s.id} value={s.id}>{s.full_name ?? s.email}</option>)}
+                {students.filter((student) => student.role === "student").map((student) => <option key={student.id} value={student.id}>{student.full_name ?? student.email}</option>)}
               </select>
             </Field>
             <Field label="Kurs *">
-              <select className={inputCls} value={enrollForm.course_id} onChange={(e) => setEnrollForm({ ...enrollForm, course_id: e.target.value })}>
-                <option value="">Välj kurs...</option>
-                {courses.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}
+              <select className={inputCls} value={enrollForm.course_id} onChange={(e) => setEnrollForm({ ...enrollForm, course_id: e.target.value, expand_capacity: false })}>
+                <option value="">Välj aktiv kurs...</option>
+                {activeCourses.map((course) => <option key={course.id} value={course.id}>{course.title} ({course.enrolled_count ?? 0}/{course.max_participants ?? "∞"})</option>)}
               </select>
             </Field>
+            {activeCourses.length === 0 && <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">Det finns ingen aktiv kurs att lägga till eleven i.</p>}
+            {enrollCourseFull && selectedEnrollCourse && (
+              <label className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900 cursor-pointer">
+                <input type="checkbox" checked={enrollForm.expand_capacity} onChange={(e) => setEnrollForm({ ...enrollForm, expand_capacity: e.target.checked })} className="mt-0.5 h-4 w-4 accent-amber-600" />
+                <span>Kursen är full ({selectedEnrollCourse.enrolled_count ?? 0}/{selectedEnrollCourse.max_participants}). Utöka kursens kapacitet med 1 plats för den här eleven.</span>
+              </label>
+            )}
+            <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">Eleven aktiveras direkt och får ett nytt mejl med en giltig inloggnings- och lösenordslänk.</p>
             <div className="flex gap-2 pt-2">
-              <button onClick={saveEnroll} disabled={saving} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Lägger till..." : "Lägg till"}</button>
+              <button onClick={saveEnroll} disabled={saving || !enrollForm.student_id || !enrollForm.course_id || (enrollCourseFull && !enrollForm.expand_capacity)} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Lägger till..." : "Aktivera och skicka inloggning"}</button>
               <button onClick={() => setShowEnrollModal(false)} className={btnSecondary}>Avbryt</button>
             </div>
           </div>

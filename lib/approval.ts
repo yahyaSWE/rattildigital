@@ -103,6 +103,13 @@ export type ApprovalSuccess = {
 
 export type ApprovalFailure = { error: string; status: number };
 
+export type ManualStudentArgs = {
+  fullName: string;
+  email: string;
+  courseId: string;
+  expandCapacity?: boolean;
+};
+
 class ApprovalFlowError extends Error {
   constructor(message: string, readonly status = 500) {
     super(message);
@@ -352,16 +359,25 @@ async function inspectCourseCapacity(
   return { expectedMaxParticipants: maxParticipants };
 }
 
-async function approveApplication(
-  args: RunApprovalArgs,
+function approvalFailure(error: unknown, context: string): ApprovalFailure {
+  const message = error instanceof Error ? error.message : "Okänt fel";
+  const status = error instanceof ApprovalFlowError
+    ? error.status
+    : message.includes("COURSE_FULL") || message.includes("CAPACITY_CHANGED") ? 409 : 500;
+  console.error(`[${context}]`, error);
+  return { error: message, status };
+}
+
+async function provisionStudentAccess(
+  args: ManualStudentArgs,
   dependencies: ApprovalDependencies,
 ): Promise<ApprovalSuccess> {
   const repository = dependencies.repository;
-  const course = await repository.getCourse(args.application.course_id);
+  const course = await repository.getCourse(args.courseId);
   if (!course) throw new ApprovalFlowError("Kursen finns inte", 404);
   if (!course.is_active) throw new ApprovalFlowError("Kursen är inte aktiv", 400);
 
-  const email = normalizeApplicationEmail(args.application.email);
+  const email = normalizeApplicationEmail(args.email);
   const existingProfile = await repository.findProfileByEmail(email);
   const enrollment = existingProfile
     ? await repository.findEnrollment(existingProfile.id, course.id)
@@ -372,14 +388,14 @@ async function approveApplication(
 
   const { studentId, passwordSetupLink } = await repository.createOrRecoverStudent({
     email,
-    name: args.application.name,
+    name: args.fullName,
     existingProfileId: existingProfile?.id ?? null,
     redirectTo: `${dependencies.siteUrl()}/satt-losenord`,
   });
   await repository.ensureStudentProfile({
     studentId,
     email,
-    name: args.application.name,
+    name: args.fullName,
     isNew: !existingProfile,
   });
 
@@ -392,18 +408,9 @@ async function approveApplication(
 
   await dependencies.sendApprovalEmail({
     toEmail: email,
-    applicantName: args.application.name,
+    applicantName: args.fullName,
     courseName: course.title,
     passwordSetupLink,
-  });
-
-  await repository.updateApplicationStatus({
-    applicationId: args.application.id,
-    status: "approved",
-    reviewerId: args.reviewerId,
-    redirectCourseId: null,
-    adminNotes: args.adminNotes ?? null,
-    reviewedAt: dependencies.now(),
   });
 
   return {
@@ -416,6 +423,29 @@ async function approveApplication(
       ? { capacity_expanded: true, new_capacity: claim.newCapacity ?? undefined }
       : {}),
   };
+}
+
+async function approveApplication(
+  args: RunApprovalArgs,
+  dependencies: ApprovalDependencies,
+): Promise<ApprovalSuccess> {
+  const result = await provisionStudentAccess({
+    fullName: args.application.name,
+    email: args.application.email,
+    courseId: args.application.course_id,
+    expandCapacity: args.expandCapacity,
+  }, dependencies);
+
+  await dependencies.repository.updateApplicationStatus({
+    applicationId: args.application.id,
+    status: "approved",
+    reviewerId: args.reviewerId,
+    redirectCourseId: null,
+    adminNotes: args.adminNotes ?? null,
+    reviewedAt: dependencies.now(),
+  });
+
+  return result;
 }
 
 async function redirectApplication(
@@ -523,12 +553,22 @@ export async function runApprovalFlow(
     });
     return { ok: true };
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Okänt fel";
-    const status = error instanceof ApprovalFlowError
-      ? error.status
-      : message.includes("COURSE_FULL") || message.includes("CAPACITY_CHANGED") ? 409 : 500;
-    console.error("[runApprovalFlow]", error);
-    return { error: message, status };
+    return approvalFailure(error, "runApprovalFlow");
+  }
+}
+
+/**
+ * Skapar eller återanvänder ett elevkonto, aktiverar kursplatsen och skickar
+ * en giltig inbjudnings-/lösenordslänk. Används när admin lägger till manuellt.
+ */
+export async function provisionManualStudent(
+  args: ManualStudentArgs,
+  dependencies: ApprovalDependencies = createDefaultDependencies(),
+): Promise<ApprovalSuccess | ApprovalFailure> {
+  try {
+    return await provisionStudentAccess(args, dependencies);
+  } catch (error) {
+    return approvalFailure(error, "provisionManualStudent");
   }
 }
 
@@ -541,59 +581,13 @@ export async function resendApprovalInstructions(
   dependencies: ApprovalDependencies = createDefaultDependencies(),
 ): Promise<ApprovalSuccess | ApprovalFailure> {
   try {
-    const repository = dependencies.repository;
-    const course = await repository.getCourse(application.course_id);
-    if (!course) throw new ApprovalFlowError("Kursen finns inte", 404);
-
-    const email = normalizeApplicationEmail(application.email);
-    const existingProfile = await repository.findProfileByEmail(email);
-    const enrollment = existingProfile
-      ? await repository.findEnrollment(existingProfile.id, course.id)
-      : null;
-    const preflight = enrollment?.status === "active"
-      ? { expectedMaxParticipants: course.max_participants }
-      : await inspectCourseCapacity(repository, course, false);
-
-    const { studentId, passwordSetupLink } = await repository.createOrRecoverStudent({
-      email,
-      name: application.name,
-      existingProfileId: existingProfile?.id ?? null,
-      redirectTo: `${dependencies.siteUrl()}/satt-losenord`,
-    });
-    await repository.ensureStudentProfile({
-      studentId,
-      email,
-      name: application.name,
-      isNew: !existingProfile,
-    });
-
-    const claim = await repository.claimActiveEnrollment({
-      studentId,
-      courseId: course.id,
-      expectedMaxParticipants: preflight.expectedMaxParticipants,
+    return await provisionStudentAccess({
+      fullName: application.name,
+      email: application.email,
+      courseId: application.course_id,
       expandCapacity: false,
-    });
-
-    await dependencies.sendApprovalEmail({
-      toEmail: email,
-      applicantName: application.name,
-      courseName: course.title,
-      passwordSetupLink,
-    });
-
-    return {
-      ok: true,
-      course_id: course.id,
-      enrollment_id: claim.enrollmentId,
-      enrollment_status: "active",
-      active_count_increased: !claim.wasAlreadyActive,
-    };
+    }, dependencies);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Okänt fel";
-    const status = error instanceof ApprovalFlowError
-      ? error.status
-      : message.includes("COURSE_FULL") || message.includes("CAPACITY_CHANGED") ? 409 : 500;
-    console.error("[resendApprovalInstructions]", error);
-    return { error: message, status };
+    return approvalFailure(error, "resendApprovalInstructions");
   }
 }
