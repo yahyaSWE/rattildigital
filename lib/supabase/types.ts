@@ -19,6 +19,7 @@ export interface Course {
   image_url: string | null
   teacher_id: string | null
   is_active: boolean
+  is_popular?: boolean
   meeting_link: string | null
   weekly_schedule: WeeklySchedule | null
   max_participants: number | null

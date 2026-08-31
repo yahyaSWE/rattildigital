@@ -11,7 +11,7 @@ export async function GET() {
   const [{ data: courses }, { data: enrollments }] = await Promise.all([
     admin
       .from("courses")
-      .select("id, title, description, level, price_sek, duration_weeks, sessions_per_week, max_participants, image_url, weekly_schedule")
+      .select("id, title, description, level, price_sek, duration_weeks, sessions_per_week, max_participants, image_url, weekly_schedule, is_popular")
       .eq("is_active", true)
       .order("price_sek", { ascending: true }),
     admin.from("enrollments").select("course_id").eq("status", "active"),

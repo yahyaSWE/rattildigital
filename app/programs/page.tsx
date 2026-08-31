@@ -16,6 +16,7 @@ type CourseData = {
   sessions_per_week: number;
   max_participants: number | null;
   enrolled_count: number;
+  is_popular: boolean;
   weekly_schedule: Array<{ enabled: boolean; time: string }> | null;
 };
 
@@ -366,9 +367,9 @@ export default function Programs() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                {courses.map((course, idx) => {
+                {courses.map((course) => {
                   const isFull    = course.max_participants !== null && course.enrolled_count >= course.max_participants;
-                  const isPopular = idx === Math.floor(courses.length / 2);
+                  const isPopular = course.is_popular === true;
                   return (
                     <div key={course.id}
                       className={`relative rounded-2xl overflow-hidden border transition-shadow hover:shadow-lg ${

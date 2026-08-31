@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS courses (
   image_url TEXT,
   teacher_id UUID REFERENCES profiles(id),
   is_active BOOLEAN DEFAULT true,
+  is_popular BOOLEAN NOT NULL DEFAULT false,
   meeting_link TEXT,                   -- En videolänk per kurs, samma för alla lektioner
   weekly_schedule JSONB,               -- [{enabled: bool, time: "HH:MM"}] × 7, index 0 = måndag
   created_at TIMESTAMPTZ DEFAULT NOW()

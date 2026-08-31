@@ -67,7 +67,7 @@ export default function AdminPanel() {
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
   const [msgRecipient, setMsgRecipient] = useState<Profile | null>(null);
 
-  const [courseForm, setCourseForm] = useState({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", weekly_schedule: defaultDays() });
+  const [courseForm, setCourseForm] = useState({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", is_popular: false, weekly_schedule: defaultDays() });
   const [bulkForm, setBulkForm] = useState({ course_id: "", title_prefix: "Lektion", start_date: "", weeks: "4", duration_minutes: "60", meeting_link: "", days: defaultDays() });
   const [studentForm, setStudentForm] = useState({ email: "", full_name: "", course_id: "", expand_capacity: false });
   const [enrollForm, setEnrollForm] = useState({ student_id: "", course_id: "", expand_capacity: false });
@@ -108,12 +108,12 @@ export default function AdminPanel() {
   // Courses
   const openCreateCourse = () => {
     setEditCourse(null);
-    setCourseForm({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", weekly_schedule: defaultDays() });
+    setCourseForm({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", is_popular: false, weekly_schedule: defaultDays() });
     setShowCourseModal(true);
   };
   const openEditCourse = (c: Course) => {
     setEditCourse(c);
-    setCourseForm({ title: c.title, description: c.description ?? "", level: c.level ?? "beginner", price_sek: String(c.price_sek), sessions_per_week: String(c.sessions_per_week), duration_weeks: c.duration_weeks ? String(c.duration_weeks) : "", max_participants: c.max_participants ? String(c.max_participants) : "", teacher_id: c.teacher_id ?? "", meeting_link: c.meeting_link ?? "", weekly_schedule: Array.isArray(c.weekly_schedule) && c.weekly_schedule.length === 7 ? c.weekly_schedule : defaultDays() });
+    setCourseForm({ title: c.title, description: c.description ?? "", level: c.level ?? "beginner", price_sek: String(c.price_sek), sessions_per_week: String(c.sessions_per_week), duration_weeks: c.duration_weeks ? String(c.duration_weeks) : "", max_participants: c.max_participants ? String(c.max_participants) : "", teacher_id: c.teacher_id ?? "", meeting_link: c.meeting_link ?? "", is_popular: c.is_popular === true, weekly_schedule: Array.isArray(c.weekly_schedule) && c.weekly_schedule.length === 7 ? c.weekly_schedule : defaultDays() });
     setShowCourseModal(true);
   };
   const saveCourse = async () => {
@@ -412,6 +412,10 @@ export default function AdminPanel() {
               <Field label="Längd (veckor)"><input className={inputCls} type="number" placeholder="Lämna tomt om löpande" value={courseForm.duration_weeks} onChange={(e) => setCourseForm({ ...courseForm, duration_weeks: e.target.value })} /></Field>
               <Field label="Max deltagare"><input className={inputCls} type="number" placeholder="Lämna tomt för obegränsat" value={courseForm.max_participants} onChange={(e) => setCourseForm({ ...courseForm, max_participants: e.target.value })} /></Field>
             </div>
+            <label className="flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5 text-sm text-gray-700 cursor-pointer">
+              <input type="checkbox" checked={courseForm.is_popular} onChange={(e) => setCourseForm({ ...courseForm, is_popular: e.target.checked })} className="h-4 w-4 accent-primary" />
+              <span>Visa kursen som <strong>Most popular</strong> på programsidan</span>
+            </label>
             <Field label="Lärare">
               <select className={inputCls} value={courseForm.teacher_id} onChange={(e) => setCourseForm({ ...courseForm, teacher_id: e.target.value })}>
                 <option value="">Ingen lärare tilldelad</option>

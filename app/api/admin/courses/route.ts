@@ -45,6 +45,7 @@ export async function POST(req: NextRequest) {
       teacher_id: body.teacher_id || null,
       max_participants: body.max_participants ? Number(body.max_participants) : null,
       is_active: true,
+      is_popular: body.is_popular === true,
       meeting_link: body.meeting_link?.trim() || null,
       weekly_schedule: Array.isArray(body.weekly_schedule) ? body.weekly_schedule : null,
     })
@@ -74,6 +75,7 @@ export async function PUT(req: NextRequest) {
       teacher_id: rest.teacher_id || null,
       max_participants: rest.max_participants ? Number(rest.max_participants) : null,
       is_active: rest.is_active ?? true,
+      is_popular: rest.is_popular === true,
       meeting_link: rest.meeting_link?.trim() || null,
       weekly_schedule: Array.isArray(rest.weekly_schedule) ? rest.weekly_schedule : null,
     })
