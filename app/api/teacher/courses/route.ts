@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { requireTeacher } from "@/lib/supabase/require-teacher";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -37,4 +37,35 @@ export async function GET() {
   }));
 
   return NextResponse.json(enriched);
+}
+
+export async function PATCH(req: NextRequest) {
+  const { user, error } = await requireTeacher();
+  if (error) return error;
+
+  const body = await req.json();
+  const id = typeof body.id === "string" ? body.id.trim() : "";
+  const rawLink = body.meeting_link == null ? "" : String(body.meeting_link).trim();
+  if (!id) return NextResponse.json({ error: "Kurs-id saknas" }, { status: 400 });
+  if (rawLink.length > 2000) return NextResponse.json({ error: "Länken är för lång" }, { status: 400 });
+  if (rawLink) {
+    try {
+      const url = new URL(rawLink);
+      if (!["http:", "https:"].includes(url.protocol)) throw new Error("invalid protocol");
+    } catch {
+      return NextResponse.json({ error: "Ange en giltig http- eller https-länk" }, { status: 400 });
+    }
+  }
+
+  const admin = createAdminClient();
+  const { data, error: updateError } = await admin
+    .from("courses")
+    .update({ meeting_link: rawLink || null })
+    .eq("id", id)
+    .eq("teacher_id", user!.id)
+    .select("id, meeting_link")
+    .maybeSingle();
+  if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 });
+  if (!data) return NextResponse.json({ error: "Kursen hittades inte eller tillhör inte dig" }, { status: 404 });
+  return NextResponse.json(data);
 }

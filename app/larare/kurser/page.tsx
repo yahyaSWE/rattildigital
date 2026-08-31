@@ -17,15 +17,40 @@ type CourseWithCount = Course & { student_count: number };
 export default function LarareKurser() {
   const [courses, setCourses] = useState<CourseWithCount[]>([]);
   const [loading, setLoading] = useState(true);
+  const [linkValues, setLinkValues] = useState<Record<string, string>>({});
+  const [savingCourseId, setSavingCourseId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
     fetch("/api/teacher/courses")
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data)) setCourses(data);
+        if (Array.isArray(data)) {
+          setCourses(data);
+          setLinkValues(Object.fromEntries(data.map((course: CourseWithCount) => [course.id, course.meeting_link ?? ""])));
+        }
         setLoading(false);
       });
   }, []);
+
+  const saveMeetingLink = async (courseId: string) => {
+    setSavingCourseId(courseId);
+    const res = await fetch("/api/teacher/courses", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: courseId, meeting_link: linkValues[courseId] ?? "" }),
+    });
+    const data = await res.json();
+    setSavingCourseId(null);
+    if (!res.ok) {
+      setFeedback(data.error ?? "Kunde inte spara länken.");
+      setTimeout(() => setFeedback(""), 3500);
+      return;
+    }
+    setCourses((previous) => previous.map((course) => course.id === courseId ? { ...course, meeting_link: data.meeting_link } : course));
+    setFeedback("Lektionslänken är uppdaterad för alla.");
+    setTimeout(() => setFeedback(""), 3500);
+  };
 
   const formatSchedule = (sched: Course["weekly_schedule"]) => {
     if (!Array.isArray(sched)) return null;
@@ -45,6 +70,7 @@ export default function LarareKurser() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      {feedback && <div className="fixed top-4 right-4 z-50 bg-primary text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg">{feedback}</div>}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Mina kurser</h1>
         <p className="text-gray-500 mt-1">{courses.length} kurser tilldelade dig.</p>
@@ -105,6 +131,23 @@ export default function LarareKurser() {
                         Starta lektion →
                       </a>
                     )}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="url"
+                        value={linkValues[c.id] ?? ""}
+                        onChange={(event) => setLinkValues((previous) => ({ ...previous, [c.id]: event.target.value }))}
+                        placeholder="Klistra in lektionslänk"
+                        aria-label={`Lektionslänk för ${c.title}`}
+                        className="w-56 px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+                      <button
+                        onClick={() => saveMeetingLink(c.id)}
+                        disabled={savingCourseId === c.id}
+                        className="text-xs font-semibold px-3 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        {savingCourseId === c.id ? "Sparar..." : "Spara länk"}
+                      </button>
+                    </div>
                     <Link
                       href="/larare/elever"
                       className="text-xs font-medium px-4 py-2 rounded-xl text-center"
