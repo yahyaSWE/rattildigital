@@ -16,7 +16,7 @@ export async function GET() {
 
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
 
-  // Räkna betalda elever per kurs
+  // Räkna aktiva elever per kurs
   const courseIds = (courses ?? []).map((c) => c.id);
   if (courseIds.length === 0) return NextResponse.json([]);
 

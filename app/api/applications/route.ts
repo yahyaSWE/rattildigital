@@ -41,13 +41,19 @@ export async function POST(req: NextRequest) {
   }
 
   // Check already applied
-  const { data: existing } = await admin
+  const { data: existing, error: existingError } = await admin
     .from("applications")
     .select("id")
     .eq("course_id", course_id)
-    .eq("email", email)
+    .ilike("email", email)
     .not("status", "eq", "rejected")
-    .single();
+    .limit(1)
+    .maybeSingle();
+
+  if (existingError) {
+    console.error("Application lookup error:", existingError.message);
+    return NextResponse.json({ error: "Kunde inte kontrollera befintliga ansökningar" }, { status: 500 });
+  }
 
   if (existing) {
     return NextResponse.json({ error: "Du har redan en aktiv ansökan till denna kurs" }, { status: 409 });
@@ -70,6 +76,9 @@ export async function POST(req: NextRequest) {
 
   if (error) {
     console.error("Application insert error:", error.message);
+    if (error.code === "23505") {
+      return NextResponse.json({ error: "Du har redan en aktiv ansökan till denna kurs" }, { status: 409 });
+    }
     return NextResponse.json({ error: "Kunde inte spara ansökan" }, { status: 500 });
   }
 
@@ -106,5 +115,23 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true });
+  const { count: activeCount, error: countError } = await admin
+    .from("enrollments")
+    .select("id", { count: "exact", head: true })
+    .eq("course_id", course_id)
+    .eq("status", "active");
+
+  if (countError) console.error("Enrollment count error:", countError.message);
+
+  const courseFull = course.max_participants !== null
+    && (activeCount ?? 0) >= course.max_participants;
+
+  return NextResponse.json({
+    ok: true,
+    application_id: application.id,
+    course_full: courseFull,
+    message: courseFull
+      ? "Ansökan är mottagen. Kursen är full, men läraren kan utöka gruppen eller hänvisa dig till en annan kurs."
+      : "Ansökan är mottagen.",
+  });
 }

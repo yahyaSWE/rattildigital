@@ -11,7 +11,21 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+
+  const { data: activeEnrollments, error: enrollmentError } = await supabase!
+    .from("enrollments")
+    .select("course_id")
+    .eq("status", "active");
+  if (enrollmentError) return NextResponse.json({ error: enrollmentError.message }, { status: 500 });
+
+  const counts = new Map<string, number>();
+  for (const enrollment of activeEnrollments ?? []) {
+    counts.set(enrollment.course_id, (counts.get(enrollment.course_id) ?? 0) + 1);
+  }
+  return NextResponse.json((data ?? []).map((course) => ({
+    ...course,
+    enrolled_count: counts.get(course.id) ?? 0,
+  })));
 }
 
 export async function POST(req: NextRequest) {

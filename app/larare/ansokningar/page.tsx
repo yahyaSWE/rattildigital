@@ -18,9 +18,10 @@ type Application = {
   created_at: string;
   course: { id: string; title: string } | null;
   redirect_course: { id: string; title: string } | null;
+  enrollment_status?: "pending" | "active" | "paused" | "cancelled" | null;
 };
 
-type Course = { id: string; title: string };
+type Course = { id: string; title: string; max_participants: number | null; enrolled_count: number };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   pending:    { label: "Väntar",     color: "bg-amber-50 text-amber-600" },
@@ -36,8 +37,9 @@ export default function LarareAnsokningar() {
   const [filter, setFilter]             = useState("pending");
   const [expanded, setExpanded]         = useState<string | null>(null);
   const [reviewing, setReviewing]       = useState<Application | null>(null);
-  const [reviewForm, setReviewForm]     = useState({ status: "approved", redirect_course_id: "", admin_notes: "" });
+  const [reviewForm, setReviewForm]     = useState({ status: "approved", redirect_course_id: "", admin_notes: "", expand_capacity: false });
   const [saving, setSaving]             = useState(false);
+  const [resendingId, setResendingId]   = useState<string | null>(null);
   const [toast, setToast]               = useState("");
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export default function LarareAnsokningar() {
 
   const openReview = (app: Application) => {
     setReviewing(app);
-    setReviewForm({ status: "approved", redirect_course_id: "", admin_notes: "" });
+    setReviewForm({ status: "approved", redirect_course_id: "", admin_notes: "", expand_capacity: false });
   };
 
   const submitReview = async () => {
@@ -70,7 +72,18 @@ export default function LarareAnsokningar() {
     const data = await res.json();
     setSaving(false);
     if (res.ok) {
-      setApplications((prev) => prev.map((a) => a.id === reviewing.id ? { ...a, status: reviewForm.status } : a));
+      setApplications((prev) => prev.map((a) => a.id === reviewing.id
+        ? { ...a, status: reviewForm.status, enrollment_status: reviewForm.status === "approved" ? "active" : a.enrollment_status }
+        : a));
+      if (data.enrollment_status === "active" && data.course_id) {
+        setCourses((prev) => prev.map((course) => course.id === data.course_id
+          ? {
+              ...course,
+              enrolled_count: course.enrolled_count + (data.active_count_increased ? 1 : 0),
+              max_participants: data.capacity_expanded ? data.new_capacity : course.max_participants,
+            }
+          : course));
+      }
       setReviewing(null);
       showToast("Ansökan uppdaterad och sökande notifierad via e-post.");
     } else {
@@ -78,8 +91,21 @@ export default function LarareAnsokningar() {
     }
   };
 
+  const resendWelcomeEmail = async (app: Application) => {
+    setResendingId(app.id);
+    const response = await fetch(`/api/teacher/applications/${app.id}/resend`, { method: "POST" });
+    const data = await response.json();
+    setResendingId(null);
+    showToast(response.ok ? `Nytt välkomstmejl skickat till ${app.email}.` : (data.error ?? "Kunde inte skicka mejlet."));
+  };
+
   const filtered = applications.filter((a) => filter === "all" || a.status === filter);
   const pendingCount = applications.filter((a) => a.status === "pending").length;
+  const selectedCourseId = reviewForm.status === "redirected" ? reviewForm.redirect_course_id : reviewing?.course_id;
+  const selectedCourse = courses.find((course) => course.id === selectedCourseId);
+  const selectedCourseFull = Boolean(selectedCourse?.max_participants !== null
+    && selectedCourse?.max_participants !== undefined
+    && selectedCourse.enrolled_count >= selectedCourse.max_participants);
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "var(--primary)", borderTopColor: "transparent" }} /></div>;
@@ -167,6 +193,21 @@ export default function LarareAnsokningar() {
                 {app.redirect_course && (
                   <p className="text-sm text-blue-600">Hänvisad till: <strong>{app.redirect_course.title}</strong></p>
                 )}
+                {app.status === "approved" && (
+                  <div className="flex items-center justify-between gap-3">
+                    <p className={`text-sm font-medium ${app.enrollment_status === "active" ? "text-green-600" : "text-red-600"}`}>
+                      {app.enrollment_status === "active" ? "✓ Aktiv kursplats" : "⚠ Saknar aktiv kursplats"}
+                    </p>
+                    <button
+                      onClick={() => resendWelcomeEmail(app)}
+                      disabled={resendingId === app.id}
+                      className="text-sm font-medium hover:underline disabled:opacity-50"
+                      style={{ color: "var(--primary)" }}
+                    >
+                      {resendingId === app.id ? "Skickar..." : "Skicka välkomstmejl igen"}
+                    </button>
+                  </div>
+                )}
                 {app.status === "pending" && (
                   <div className="pt-2">
                     <button onClick={() => openReview(app)}
@@ -195,7 +236,7 @@ export default function LarareAnsokningar() {
                 <label className="text-xs font-semibold text-gray-500 block mb-2">Beslut</label>
                 <div className="flex gap-2 flex-wrap">
                   {[["approved", "✓ Godkänn", "bg-green-50 border-green-300 text-green-700"], ["rejected", "✗ Neka", "bg-red-50 border-red-300 text-red-600"], ["redirected", "→ Hänvisa till annan kurs", "bg-blue-50 border-blue-300 text-blue-600"]].map(([val, label, cls]) => (
-                    <button key={val} onClick={() => setReviewForm(p => ({ ...p, status: val }))}
+                    <button key={val} onClick={() => setReviewForm(p => ({ ...p, status: val, expand_capacity: false }))}
                       className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ${reviewForm.status === val ? cls + " border-2" : "border-gray-200 text-gray-500 hover:bg-gray-50"}`}>
                       {label}
                     </button>
@@ -207,7 +248,7 @@ export default function LarareAnsokningar() {
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1">Hänvisa till kurs</label>
                   <select value={reviewForm.redirect_course_id}
-                    onChange={(e) => setReviewForm(p => ({ ...p, redirect_course_id: e.target.value }))}
+                    onChange={(e) => setReviewForm(p => ({ ...p, redirect_course_id: e.target.value, expand_capacity: false }))}
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
                     <option value="">Välj kurs...</option>
                     {courses.filter((c) => c.id !== reviewing.course_id).map((c) => (
@@ -215,6 +256,26 @@ export default function LarareAnsokningar() {
                     ))}
                   </select>
                 </div>
+              )}
+
+              {reviewForm.status === "approved" && selectedCourseFull && (
+                <label className="flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+                  <input
+                    type="checkbox"
+                    checked={reviewForm.expand_capacity}
+                    onChange={(event) => setReviewForm((previous) => ({ ...previous, expand_capacity: event.target.checked }))}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    <strong>Kursen är full ({selectedCourse?.enrolled_count}/{selectedCourse?.max_participants}).</strong><br />
+                    Utöka kursens kapacitet med 1 plats för den här eleven.
+                  </span>
+                </label>
+              )}
+              {reviewForm.status === "redirected" && selectedCourseFull && (
+                <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  Målkursen är full ({selectedCourse?.enrolled_count}/{selectedCourse?.max_participants}). Välj en kurs med ledig plats.
+                </p>
               )}
 
               <div>
@@ -232,7 +293,7 @@ export default function LarareAnsokningar() {
                   className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50">
                   Avbryt
                 </button>
-                <button onClick={submitReview} disabled={saving || (reviewForm.status === "redirected" && !reviewForm.redirect_course_id)}
+                <button onClick={submitReview} disabled={saving || (reviewForm.status === "redirected" && !reviewForm.redirect_course_id) || (selectedCourseFull && !reviewForm.expand_capacity)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 hover:opacity-90"
                   style={{ backgroundColor: "var(--primary)" }}>
                   {saving ? "Sparar..." : "Skicka svar"}

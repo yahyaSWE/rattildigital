@@ -55,7 +55,7 @@ export default function AdminPanel() {
   const [applications, setApplications] = useState<ApplicationRow[]>([]);
   const [appFilter, setAppFilter] = useState("pending");
   const [appReviewing, setAppReviewing] = useState<ApplicationRow | null>(null);
-  const [appReviewForm, setAppReviewForm] = useState({ status: "approved", redirect_course_id: "", admin_notes: "" });
+  const [appReviewForm, setAppReviewForm] = useState({ status: "approved", redirect_course_id: "", admin_notes: "", expand_capacity: false });
 
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [showMaterialModal, setShowMaterialModal] = useState(false);
@@ -271,14 +271,23 @@ export default function AdminPanel() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: appReviewing.id, ...appReviewForm }),
     });
+    const data = await res.json();
     setSaving(false);
     if (res.ok) {
       setApplications((prev) => prev.map((a) => a.id === appReviewing.id ? { ...a, status: appReviewForm.status } : a));
+      if (data.enrollment_status === "active" && data.course_id) {
+        setCourses((prev) => prev.map((course) => course.id === data.course_id
+          ? {
+              ...course,
+              enrolled_count: (course.enrolled_count ?? 0) + (data.active_count_increased ? 1 : 0),
+              max_participants: data.capacity_expanded ? data.new_capacity : course.max_participants,
+            }
+          : course));
+      }
       setAppReviewing(null);
       toast("Ansökan uppdaterad och sökande notifierad.");
     } else {
-      const d = await res.json();
-      toast(d.error ?? "Något gick fel.");
+      toast(data.error ?? "Något gick fel.");
     }
   };
 
@@ -351,7 +360,7 @@ export default function AdminPanel() {
           <WaitlistTab waitlist={waitlist} onDelete={deleteWaitlist} />
         )}
         {tab === "applications" && (
-          <ApplicationsTab applications={applications} courses={courses} appFilter={appFilter} onFilterChange={setAppFilter} appReviewing={appReviewing} appReviewForm={appReviewForm} onReviewFormChange={setAppReviewForm} onStartReview={(app) => { setAppReviewing(app); setAppReviewForm({ status: "approved", redirect_course_id: "", admin_notes: "" }); }} onCancelReview={() => setAppReviewing(null)} onSubmitReview={submitReview} onResendEmail={resendApplicationEmail} resendingId={resendingAppId} saving={saving} />
+          <ApplicationsTab applications={applications} courses={courses} appFilter={appFilter} onFilterChange={setAppFilter} appReviewing={appReviewing} appReviewForm={appReviewForm} onReviewFormChange={setAppReviewForm} onStartReview={(app) => { setAppReviewing(app); setAppReviewForm({ status: "approved", redirect_course_id: "", admin_notes: "", expand_capacity: false }); }} onCancelReview={() => setAppReviewing(null)} onSubmitReview={submitReview} onResendEmail={resendApplicationEmail} resendingId={resendingAppId} saving={saving} />
         )}
       </div>
 

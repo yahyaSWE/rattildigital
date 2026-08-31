@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { runApprovalFlow } from "@/lib/approval";
+import { attachEnrollmentStatuses } from "@/lib/application-enrollment";
 import { NextRequest, NextResponse } from "next/server";
 
 async function getTeacher() {
@@ -38,14 +39,19 @@ export async function GET() {
     .order("created_at", { ascending: false });
 
   if (err) return NextResponse.json({ error: err.message }, { status: 500 });
-  return NextResponse.json(data ?? []);
+  try {
+    return NextResponse.json(await attachEnrollmentStatuses(data ?? []));
+  } catch (statusError) {
+    const message = statusError instanceof Error ? statusError.message : "Kunde inte läsa kursplatsstatus";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 
 export async function PATCH(req: NextRequest) {
   const { error, user } = await getTeacher();
   if (error) return error;
 
-  const { id, status, redirect_course_id, admin_notes } = await req.json();
+  const { id, status, redirect_course_id, admin_notes, expand_capacity } = await req.json();
   if (!id || !["approved", "rejected", "redirected"].includes(status)) {
     return NextResponse.json({ error: "Ogiltiga parametrar" }, { status: 400 });
   }
@@ -55,7 +61,7 @@ export async function PATCH(req: NextRequest) {
   // Hämta ansökan + verifiera att läraren äger kursen
   const { data: application } = await admin
     .from("applications")
-    .select("*, course:courses!course_id(id, title, teacher_id), redirect_course:courses!redirect_course_id(id, title)")
+    .select("*, course:courses!course_id(id, title, teacher_id, is_active, max_participants), redirect_course:courses!redirect_course_id(id, title)")
     .eq("id", id)
     .single();
 
@@ -75,8 +81,9 @@ export async function PATCH(req: NextRequest) {
     reviewerId: user!.id,
     redirectCourseId: redirect_course_id,
     adminNotes: admin_notes,
+    expandCapacity: expand_capacity === true,
   });
 
-  if ("error" in result) return NextResponse.json({ error: result.error }, { status: 500 });
-  return NextResponse.json({ ok: true });
+  if ("error" in result) return NextResponse.json({ error: result.error }, { status: result.status });
+  return NextResponse.json(result);
 }

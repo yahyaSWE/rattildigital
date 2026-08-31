@@ -69,7 +69,7 @@ objektet i synk med `:root` i `globals.css`.
 ├── app/
 │   ├── page.tsx                  # Startsida
 │   ├── om-oss/                   # Om oss
-│   ├── kurser/                   # Kurser, ansökningsformulär, väntelista
+│   ├── programs/                 # Kurser och ansökningsformulär
 │   ├── kontakt/                  # Kontaktformulär
 │   ├── logga-in/                 # Inloggning
 │   ├── portal/                   # Elevportal (skyddad)
@@ -88,6 +88,7 @@ objektet i synk med `:root` i `globals.css`.
 ├── proxy.ts                      # Auth-skydd för /portal, /larare, /admin
 └── supabase/
     ├── schema.sql                # Komplett schema – kör denna
+    ├── migrations/               # Ändringar för en befintlig databas
     └── seed.sql                  # Exempeldata (valfritt)
 ```
 
@@ -98,11 +99,17 @@ objektet i synk med `:root` i `globals.css`.
 Tre roller styrs av `profiles.role`: `student`, `teacher`, `admin`.
 
 **Ansökningsflödet:**
-1. Besökare fyller i ansökan på `/kurser`
+1. Besökare fyller i ansökan på `/programs`, även när kursen är full
 2. Lärare eller admin granskar under `/larare/ansokningar` respektive `/admin`
-3. Vid godkännande skapas ett elevkonto, en enrollment sätts till `active`,
+3. En full kurs kräver ett uttryckligt val att utöka gruppen med en plats, annars
+   kan eleven hänvisas till en aktiv kurs med ledig kapacitet
+4. Vid godkännande skapas eller återanvänds elevkontot, en unik enrollment sätts till `active`,
    och eleven får ett välkomstmejl med länk för att sätta lösenord
-4. Eleven loggar in och ser sitt schema, sitt material och kan meddela läraren
+5. Eleven loggar in och ser sitt schema, sitt material och kan meddela läraren
+
+Det finns ingen Stripe- eller Checkout-integration. Ett godkännande ger direkt
+kursåtkomst. Den äldre `/api/waitlist` finns bara för bakåtkompatibilitet och
+skapar numera en vanlig `pending`-ansökan.
 
 **Åtkomstkontroll:** en elev ser en kurs lektioner och material endast när
 `enrollments.status = 'active'`. Detta upprätthålls i RLS, inte bara i UI:t.
@@ -111,11 +118,26 @@ Tre roller styrs av `profiles.role`: `student`, `teacher`, `admin`.
 
 ## Driftsättning på Vercel
 
+För en befintlig Supabase-databas ska migrationerna i `supabase/migrations/`
+köras och verifieras i nummerordning innan denna kod driftsätts. Den första
+migrationen kopierar äldre väntelistrader utan att radera dem; den andra stoppar
+om öppna dubbletter behöver granskas; den tredje installerar den atomiska
+kapacitetskontrollen.
+
 1. Pusha koden till GitHub
 2. Importera repot på [vercel.com](https://vercel.com)
 3. Lägg till miljövariablerna från `.env.local.example` under Settings
 4. Sätt `NEXT_PUBLIC_SITE_URL` till produktionsdomänen
 5. Deployera — Vercel hanterar SSL automatiskt
+
+Verifiera före push:
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+```
 
 ---
 

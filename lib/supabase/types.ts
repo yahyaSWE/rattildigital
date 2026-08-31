@@ -22,6 +22,7 @@ export interface Course {
   meeting_link: string | null
   weekly_schedule: WeeklySchedule | null
   max_participants: number | null
+  enrolled_count?: number
   created_at: string
   teacher?: Profile
 }

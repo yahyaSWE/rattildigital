@@ -107,7 +107,7 @@ export async function sendApprovalEmail({
   passwordSetupLink: string | null;
 }) {
   const resend = getResend();
-  if (!resend) return;
+  if (!resend) throw new Error("RESEND_API_KEY saknas – välkomstmejlet kunde inte skickas");
   const safeApplicantName = escapeHtml(applicantName);
   const safeCourseName = escapeHtml(courseName);
   const safePasswordSetupLink = passwordSetupLink ? escapeHtml(passwordSetupLink) : null;
@@ -129,7 +129,7 @@ export async function sendApprovalEmail({
     ? "Sätt ditt lösenord så kommer du åt din elevportal:"
     : "Du har nu tillgång till din elevportal – logga in med ditt befintliga lösenord.";
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to: toEmail,
     subject: `Din ansökan till ${cleanHeader(courseName)} är godkänd!`,
@@ -153,6 +153,7 @@ export async function sendApprovalEmail({
       </div>
     `,
   });
+  if (error) throw new Error(`Välkomstmejlet kunde inte skickas: ${error.message}`);
 }
 
 export async function sendApplicationStatusEmail({
@@ -171,7 +172,7 @@ export async function sendApplicationStatusEmail({
   notes?: string;
 }) {
   const resend = getResend();
-  if (!resend) return;
+  if (!resend) throw new Error("RESEND_API_KEY saknas – beslutsmejlet kunde inte skickas");
   const safeApplicantName = escapeHtml(applicantName);
   const safeCourseName = escapeHtml(courseName);
   const safeRedirectCourseName = escapeHtml(redirectCourseName ?? "en annan kurs");
@@ -189,7 +190,7 @@ export async function sendApplicationStatusEmail({
     redirected: `Efter att ha granskat din ansökan till <strong>${safeCourseName}</strong> rekommenderar vi att du börjar med <strong>${safeRedirectCourseName}</strong> som passar din nuvarande nivå bättre.`,
   };
 
-  await resend.emails.send({
+  const { error } = await resend.emails.send({
     from: FROM,
     to: toEmail,
     subject: subjects[status],
@@ -203,4 +204,5 @@ export async function sendApplicationStatusEmail({
       </div>
     `,
   });
+  if (error) throw new Error(`Beslutsmejlet kunde inte skickas: ${error.message}`);
 }

@@ -74,7 +74,7 @@ const faqs = [
   { q: "How are the lessons delivered?", a: "All teaching takes place online over video call. You only need a computer, tablet or phone with a camera and microphone." },
   { q: "What happens if I miss a lesson?", a: "If you miss a lesson you can catch up on what you missed through the student portal." },
   { q: "What if the teacher has to cancel a lesson?", a: "Your teacher will do their best to reschedule the lesson for another time." },
-  { q: "Can I apply to a programme that is full?", a: "Yes — you will be placed on the waiting list and we will contact you when a place opens up." },
+  { q: "Can I apply to a programme that is full?", a: "Yes. Your application is reviewed as usual, and the teacher can expand the group or refer you to another suitable programme." },
   { q: "Who can join Rattil Digital Academy?", a: "Our academy welcomes children, teenagers, and adults from all over the world. Lessons are tailored to each student's level and goals." },
   { q: "How does payment work?", a: "We send invoicing details separately once your application has been approved." },
 ];
