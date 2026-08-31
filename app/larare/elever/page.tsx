@@ -14,7 +14,7 @@ type Student = {
   id: string;
   full_name: string | null;
   email: string | null;
-  courses: string[];
+  courses: { id: string; title: string }[];
 };
 
 export default function LarareElever() {
@@ -40,15 +40,15 @@ export default function LarareElever() {
           if (!e.student) continue;
           const existing = map.get(e.student.id);
           if (existing) {
-            if (e.course && !existing.courses.includes(e.course.title)) {
-              existing.courses.push(e.course.title);
+            if (e.course && !existing.courses.some((course) => course.id === e.course?.id)) {
+              existing.courses.push(e.course);
             }
           } else {
             map.set(e.student.id, {
               id: e.student.id,
               full_name: e.student.full_name,
               email: e.student.email,
-              courses: e.course ? [e.course.title] : [],
+              courses: e.course ? [e.course] : [],
             });
           }
         }
@@ -74,6 +74,15 @@ export default function LarareElever() {
       toast("Något gick fel.");
     }
   };
+
+  const groupedStudents = Array.from(students.reduce((groups, student) => {
+    for (const course of student.courses) {
+      const group = groups.get(course.id) ?? { id: course.id, title: course.title, students: [] as Student[] };
+      if (!group.students.some((item: Student) => item.id === student.id)) group.students.push(student);
+      groups.set(course.id, group);
+    }
+    return groups;
+  }, new Map<string, { id: string; title: string; students: Student[] }>()).values());
 
   if (loading) {
     return (
@@ -101,18 +110,27 @@ export default function LarareElever() {
           <p className="text-sm">Du har inga elever ännu. Kontakta admin för att bli tilldelad en kurs.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Elev</th>
-                <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Kurser</th>
-                <th className="px-6 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {students.map((s) => (
-                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+        <div className="space-y-5">
+          {groupedStudents.map((group) => (
+            <section key={group.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/70">
+                <div>
+                  <h2 className="font-semibold text-gray-900">{group.title}</h2>
+                  <p className="text-xs text-gray-400 mt-0.5">{group.students.length} {group.students.length === 1 ? "elev" : "elever"}</p>
+                </div>
+                <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={{ backgroundColor: "var(--primary-light)", color: "var(--primary)" }}>Min kurs</span>
+              </div>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Elev</th>
+                    <th className="text-left px-6 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Övriga kurser</th>
+                    <th className="px-6 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                {group.students.map((s) => (
+                  <tr key={`${group.id}-${s.id}`} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: "var(--primary)" }}>
@@ -126,9 +144,9 @@ export default function LarareElever() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-wrap gap-1">
-                      {s.courses.map((c) => (
-                        <span key={c} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--primary-light)", color: "var(--primary)" }}>
-                          {c}
+                      {s.courses.filter((course) => course.id !== group.id).map((course) => (
+                        <span key={course.id} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: "var(--primary-light)", color: "var(--primary)" }}>
+                          {course.title}
                         </span>
                       ))}
                     </div>
@@ -151,10 +169,12 @@ export default function LarareElever() {
                       </button>
                     </div>
                   </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </tr>
+                ))}
+                </tbody>
+              </table>
+            </section>
+          ))}
         </div>
       )}
 
