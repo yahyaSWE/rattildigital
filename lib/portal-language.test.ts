@@ -12,6 +12,12 @@ describe("portal languages", () => {
     expect(translatePortalText("Välkommen tillbaka, Yahya!", "ar")).toBe("مرحبًا بعودتك، Yahya!");
   });
 
+  it("translates dynamic teacher dashboard counters", () => {
+    expect(translatePortalText("0 elever i dina kurser", "en")).toBe("0 students in your courses");
+    expect(translatePortalText("Inga olästa", "ar")).toBe("لا توجد رسائل غير مقروءة");
+    expect(translatePortalText("Inga väntande", "en")).toBe("None pending");
+  });
+
   it("keeps authored content that has no interface translation", () => {
     expect(translatePortalText("Surah Al-Fatiha", "ar")).toBe("Surah Al-Fatiha");
   });

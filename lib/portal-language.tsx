@@ -7,6 +7,7 @@ export type PortalLanguage = "sv" | "en" | "ar";
 
 const translations: Record<"en" | "ar", Record<string, string>> = {
   en: {
+    "Inga olästa":"None unread", "Inga väntande":"None pending",
     "Översikt":"Overview", "Mina kurser":"My courses", "Schema":"Schedule", "Lektionsmaterial":"Lesson material", "Meddelanden":"Messages", "Min profil":"My profile",
     "Elevportal":"Student portal", "Lärarportal":"Teacher portal", "Inloggad som":"Signed in as", "Logga ut":"Log out", "Språk":"Language",
     "Välkommen till din lärarportal.":"Welcome to your teacher portal.", "Elever totalt":"Total students", "Olästa meddelanden":"Unread messages", "Ansökningar":"Applications", "Senaste elever":"Latest students",
@@ -25,6 +26,7 @@ const translations: Record<"en" | "ar", Record<string, string>> = {
     "Januari":"January", "Februari":"February", "Mars":"March", "April":"April", "Maj":"May", "Juni":"June", "Juli":"July", "Augusti":"August", "September":"September", "Oktober":"October", "November":"November", "December":"December", "Mån":"Mon", "Tis":"Tue", "Ons":"Wed", "Tor":"Thu", "Fre":"Fri", "Lör":"Sat", "Sön":"Sun", "Måndag":"Monday", "Tisdag":"Tuesday", "Onsdag":"Wednesday", "Torsdag":"Thursday", "Fredag":"Friday", "Lördag":"Saturday", "Söndag":"Sunday", "Igår":"Yesterday"
   },
   ar: {
+    "Inga olästa":"لا توجد رسائل غير مقروءة", "Inga väntande":"لا توجد طلبات معلقة",
     "Översikt":"نظرة عامة", "Mina kurser":"دوراتي", "Schema":"الجدول", "Lektionsmaterial":"مواد الدروس", "Meddelanden":"الرسائل", "Min profil":"ملفي الشخصي",
     "Elevportal":"بوابة الطالب", "Lärarportal":"بوابة المعلم", "Inloggad som":"مسجل الدخول باسم", "Logga ut":"تسجيل الخروج", "Språk":"اللغة",
     "Välkommen till din lärarportal.":"مرحبًا بك في بوابة المعلم.", "Elever totalt":"إجمالي الطلاب", "Olästa meddelanden":"رسائل غير مقروءة", "Väntande ansökningar":"طلبات قيد الانتظار", "Mina elever":"طلابي", "Ansökningar":"الطلبات", "Senaste elever":"أحدث الطلاب",
@@ -59,6 +61,8 @@ export function translatePortalText(source: string, language: PortalLanguage) {
   if (pendingReply) return language === "ar" ? `${pendingReply[1]} بانتظار الرد` : `${pendingReply[1]} awaiting reply`;
   const unread = source.match(/^(\d+) olästa$/);
   if (unread) return language === "ar" ? `${unread[1]} غير مقروءة` : `${unread[1]} unread`;
+  const students = source.match(/^(\d+) elever i dina kurser$/);
+  if (students) return language === "ar" ? `${students[1]} طالب في دوراتك` : `${students[1]} students in your courses`;
   for (const [sv, translated] of Object.entries(translations[language]).sort(([a], [b]) => b.length - a.length)) {
     if (sv.length < 3 || !value.includes(sv)) continue;
     value = value.replaceAll(sv, translated);
@@ -77,7 +81,11 @@ export function PortalLanguageProvider({ children }: { children: React.ReactNode
 
   useEffect(() => {
     const stored = window.localStorage.getItem("portal-language");
-    if (stored === "sv" || stored === "en" || stored === "ar") queueMicrotask(() => setLanguageState(stored));
+    if (stored === "sv" || stored === "en" || stored === "ar") {
+      queueMicrotask(() => setLanguageState(stored));
+      void fetch("/api/profile/language", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language: stored }) });
+      return;
+    }
     const supabase = createClient();
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) return;
@@ -90,9 +98,7 @@ export function PortalLanguageProvider({ children }: { children: React.ReactNode
     setLanguageState(next);
     window.localStorage.setItem("portal-language", next);
     document.cookie = `portal_language=${next}; path=/; max-age=31536000; samesite=lax`;
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) await supabase.from("profiles").update({ preferred_language: next }).eq("id", user.id);
+    await fetch("/api/profile/language", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ language: next }) });
   }, []);
 
   useEffect(() => {
