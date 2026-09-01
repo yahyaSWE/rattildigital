@@ -17,6 +17,7 @@ describe("portal languages", () => {
     expect(translatePortalText("elever i dina kurser", "ar")).toBe("طلاب في دوراتك");
     expect(translatePortalText("Inga olästa", "ar")).toBe("لا توجد رسائل غير مقروءة");
     expect(translatePortalText("Inga väntande", "en")).toBe("None pending");
+    expect(translatePortalText("Se hela schemat →", "ar")).toBe("عرض الجدول كاملًا →");
   });
 
   it("keeps authored content that has no interface translation", () => {

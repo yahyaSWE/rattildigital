@@ -7,7 +7,7 @@ export type PortalLanguage = "sv" | "en" | "ar";
 
 const translations: Record<"en" | "ar", Record<string, string>> = {
   en: {
-    "Inga olästa":"None unread", "Inga väntande":"None pending", "elever i dina kurser":"students in your courses",
+    "Inga olästa":"None unread", "Inga väntande":"None pending", "elever i dina kurser":"students in your courses", "Välkommen tillbaka":"Welcome back", "Se hela schemat":"View full schedule", "Inga kommande lektioner inbokade ännu.":"No upcoming lessons have been scheduled yet.", "Se tillgängliga kurser":"View available courses",
     "Översikt":"Overview", "Mina kurser":"My courses", "Schema":"Schedule", "Lektionsmaterial":"Lesson material", "Meddelanden":"Messages", "Min profil":"My profile",
     "Elevportal":"Student portal", "Lärarportal":"Teacher portal", "Inloggad som":"Signed in as", "Logga ut":"Log out", "Språk":"Language",
     "Välkommen till din lärarportal.":"Welcome to your teacher portal.", "Elever totalt":"Total students", "Olästa meddelanden":"Unread messages", "Ansökningar":"Applications", "Senaste elever":"Latest students",
@@ -26,7 +26,7 @@ const translations: Record<"en" | "ar", Record<string, string>> = {
     "Januari":"January", "Februari":"February", "Mars":"March", "April":"April", "Maj":"May", "Juni":"June", "Juli":"July", "Augusti":"August", "September":"September", "Oktober":"October", "November":"November", "December":"December", "Mån":"Mon", "Tis":"Tue", "Ons":"Wed", "Tor":"Thu", "Fre":"Fri", "Lör":"Sat", "Sön":"Sun", "Måndag":"Monday", "Tisdag":"Tuesday", "Onsdag":"Wednesday", "Torsdag":"Thursday", "Fredag":"Friday", "Lördag":"Saturday", "Söndag":"Sunday", "Igår":"Yesterday"
   },
   ar: {
-    "Inga olästa":"لا توجد رسائل غير مقروءة", "Inga väntande":"لا توجد طلبات معلقة", "elever i dina kurser":"طلاب في دوراتك",
+    "Inga olästa":"لا توجد رسائل غير مقروءة", "Inga väntande":"لا توجد طلبات معلقة", "elever i dina kurser":"طلاب في دوراتك", "Välkommen tillbaka":"مرحبًا بعودتك", "Se hela schemat":"عرض الجدول كاملًا", "Inga kommande lektioner inbokade ännu.":"لا توجد دروس قادمة مجدولة بعد.", "Se tillgängliga kurser":"عرض الدورات المتاحة",
     "Översikt":"نظرة عامة", "Mina kurser":"دوراتي", "Schema":"الجدول", "Lektionsmaterial":"مواد الدروس", "Meddelanden":"الرسائل", "Min profil":"ملفي الشخصي",
     "Elevportal":"بوابة الطالب", "Lärarportal":"بوابة المعلم", "Inloggad som":"مسجل الدخول باسم", "Logga ut":"تسجيل الخروج", "Språk":"اللغة",
     "Välkommen till din lärarportal.":"مرحبًا بك في بوابة المعلم.", "Elever totalt":"إجمالي الطلاب", "Olästa meddelanden":"رسائل غير مقروءة", "Väntande ansökningar":"طلبات قيد الانتظار", "Mina elever":"طلابي", "Ansökningar":"الطلبات", "Senaste elever":"أحدث الطلاب",
