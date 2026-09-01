@@ -73,7 +73,7 @@ export default function Teachers() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">{benefits.map((benefit) => <div key={benefit.title} className="bg-white rounded-2xl p-6"><h3 className="font-semibold mb-2" style={{ color: "var(--primary)" }}>{benefit.title}</h3><p className="text-sm text-text-muted leading-relaxed">{benefit.text}</p></div>)}</div>
         </div>
       </section>
-      <section className="py-20 text-center" style={{ background: "var(--gradient-dark)" }}><div className="max-w-3xl mx-auto px-4"><h2 className="text-3xl font-bold text-white mb-4">Start Your Learning Journey Today</h2><p className="text-white/70 mb-8">Join Rattil Digital Academy and learn from experienced Quran and Arabic teachers dedicated to helping you achieve your goals through personalized online education.</p><Link href="/programs#available-programs" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link></div></section>
+      <section className="py-20 text-center" style={{ background: "var(--gradient-dark)" }}><div className="max-w-3xl mx-auto px-4"><h2 className="text-3xl font-bold text-white mb-4">Start Your Learning Journey Today</h2><p className="text-white/70 mb-8">Join Rattil Digital Academy and learn from experienced Quran and Arabic teachers dedicated to helping you achieve your goals through personalized online education.</p><Link href="/individual-lessons" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link></div></section>
     </main>
     <Footer />
   </>;

@@ -102,7 +102,7 @@ export default function Navbar() {
                   Student Portal
                 </Link>
                 <Link
-                  href="/programs#available-programs"
+                  href="/individual-lessons"
                   className="text-sm font-semibold text-white px-5 py-2.5 rounded-lg transition-all hover:opacity-90 active:scale-95 whitespace-nowrap"
                   style={{ backgroundColor: "var(--accent)" }}
                 >
@@ -174,7 +174,7 @@ export default function Navbar() {
                   Student Portal
                 </Link>
                 <Link
-                  href="/programs#available-programs"
+                  href="/individual-lessons"
                   onClick={() => setOpen(false)}
                   className="block text-sm font-semibold text-white text-center px-4 py-2.5 rounded-lg"
                   style={{ backgroundColor: "var(--accent)" }}

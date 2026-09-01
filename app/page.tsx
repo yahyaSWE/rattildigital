@@ -127,7 +127,7 @@ export default function Home() {
 
                 <div className="flex flex-col sm:flex-row gap-3 mb-10">
                   <Link
-                    href="/programs#available-programs"
+                    href="/individual-lessons"
                     className="inline-flex items-center justify-center text-base font-semibold text-white px-7 py-3.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
                     style={{ backgroundColor: "var(--accent)" }}
                   >
@@ -172,7 +172,7 @@ export default function Home() {
                   ))}
                 </ul>
                 <Link
-                  href="/programs#available-programs"
+                  href="/individual-lessons"
                   className="block w-full text-center text-sm font-semibold text-white px-5 py-3 rounded-lg transition-all hover:opacity-90 active:scale-95"
                   style={{ backgroundColor: "var(--primary)" }}
                 >
@@ -367,7 +367,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                href="/programs#available-programs"
+                href="/individual-lessons"
                 className="inline-flex items-center justify-center font-semibold text-white px-8 py-3.5 rounded-lg transition-all hover:opacity-90 active:scale-95"
                 style={{ backgroundColor: "var(--accent)" }}
               >

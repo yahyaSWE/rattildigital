@@ -76,7 +76,7 @@ export default function About() {
           <div className="max-w-3xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-white mb-4">Begin Your Learning Journey Today</h2>
             <p className="text-white/70 mb-8">Book your free trial lesson and discover how {BRAND.name} can help you achieve your Quran and Arabic learning goals.</p>
-            <Link href="/programs#available-programs" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link>
+            <Link href="/individual-lessons" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link>
           </div>
         </section>
       </main>

@@ -127,11 +127,11 @@ function ApplyButton({ course, enrolledIds, appliedIds, onApply }: {
     );
   }
   return (
-    <button onClick={() => onApply(course)}
+    <Link href="/individual-lessons"
       className="block w-full text-center font-semibold py-3 rounded-lg transition-all active:scale-95 hover:opacity-90"
       style={{ backgroundColor: "var(--accent)", color: "white" }}>
       Book Free Trial
-    </button>
+    </Link>
   );
 }
 

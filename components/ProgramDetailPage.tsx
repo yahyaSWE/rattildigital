@@ -31,7 +31,7 @@ export default function ProgramDetailPage({ content }: { content: ProgramContent
           <h1 className="text-4xl sm:text-5xl font-bold mb-6 max-w-4xl" style={{ color: "var(--primary)" }}>{content.title}</h1>
           <p className="text-text-muted text-lg leading-relaxed max-w-3xl mb-4">{content.intro}</p>
           <p className="text-text-muted leading-relaxed max-w-3xl mb-8">{content.assessment}</p>
-          <div className="flex flex-wrap gap-3"><Link href="/programs#available-programs" className="px-7 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link><Link href="/contact" className="px-7 py-3.5 rounded-lg font-semibold border-2" style={{ borderColor: "var(--primary)", color: "var(--primary)" }}>Contact Us</Link></div>
+          <div className="flex flex-wrap gap-3"><Link href="/individual-lessons" className="px-7 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your Free Trial</Link><Link href="/contact" className="px-7 py-3.5 rounded-lg font-semibold border-2" style={{ borderColor: "var(--primary)", color: "var(--primary)" }}>Contact Us</Link></div>
         </div>
       </section>
 
@@ -47,7 +47,7 @@ export default function ProgramDetailPage({ content }: { content: ProgramContent
 
       <section className="py-20" style={{ backgroundColor: "var(--surface-muted)" }}><div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8"><h2 className="text-3xl font-bold text-center mb-12" style={{ color: "var(--primary)" }}>Frequently Asked Questions</h2><div className="space-y-3">{content.faqs.map((faq) => <details key={faq.q} className="group bg-white rounded-xl border border-gray-100 overflow-hidden"><summary className="px-5 py-4 cursor-pointer font-semibold list-none" style={{ color: "var(--primary)" }}>{faq.q}</summary><p className="px-5 pb-4 text-sm text-text-muted leading-relaxed">{faq.a}</p></details>)}</div></div></section>
 
-      <section className="py-20 text-center" style={{ background: "var(--gradient-dark)" }}><div className="max-w-4xl mx-auto px-4"><h2 className="text-3xl font-bold text-white mb-4">{content.ctaTitle}</h2><p className="text-white/70 leading-relaxed mb-8">{content.ctaText}</p><Link href="/programs#available-programs" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your FREE Trial</Link><p className="text-white/50 text-sm mt-4">No commitment required. Start with a free assessment lesson.</p></div></section>
+      <section className="py-20 text-center" style={{ background: "var(--gradient-dark)" }}><div className="max-w-4xl mx-auto px-4"><h2 className="text-3xl font-bold text-white mb-4">{content.ctaTitle}</h2><p className="text-white/70 leading-relaxed mb-8">{content.ctaText}</p><Link href="/individual-lessons" className="inline-flex px-8 py-3.5 rounded-lg font-semibold text-white" style={{ backgroundColor: "var(--accent)" }}>Book Your FREE Trial</Link><p className="text-white/50 text-sm mt-4">No commitment required. Start with a free assessment lesson.</p></div></section>
     </main>
     <Footer />
   </>;
