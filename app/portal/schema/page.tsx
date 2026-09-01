@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
-import { expandWeeklySchedule } from "@/lib/lessons";
+import { expandIndividualBooking, expandWeeklySchedule } from "@/lib/lessons";
 
 type Lesson = {
   id: string;
@@ -57,14 +57,10 @@ export default function Schema() {
         .eq("student_id", user.id).eq("status", "active");
 
       const ids = (enrollments ?? []).map((e) => e.course_id);
-      if (ids.length === 0) { setLoading(false); return; }
-
-      const { data } = await supabase
-        .from("lessons")
-        .select("*, course:courses(title)")
-        .in("course_id", ids)
-        .eq("is_cancelled", false)
-        .order("scheduled_at", { ascending: true });
+      const [{ data }, { data: individualBookings }] = await Promise.all([
+        ids.length ? supabase.from("lessons").select("*, course:courses(title)").in("course_id", ids).eq("is_cancelled", false).order("scheduled_at", { ascending: true }) : Promise.resolve({ data: [] }),
+        supabase.from("individual_bookings").select("id, area, starts_on, duration_minutes, meeting_link, teacher:profiles!teacher_id(full_name), slots:individual_booking_slots(weekday, start_time), exceptions:individual_lesson_exceptions(original_date, replacement_start, status)").eq("student_id", user.id).eq("status", "active"),
+      ]);
 
       const dbLessons = (data ?? []) as Lesson[];
 
@@ -90,7 +86,16 @@ export default function Schema() {
         }));
       });
 
-      const merged = [...dbLessons, ...virtuals]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const individualVirtuals: Lesson[] = (individualBookings ?? []).flatMap((booking: any) =>
+        expandIndividualBooking(booking, new Date(), horizon).map((lesson) => ({
+          id: lesson.id, title: lesson.title, scheduled_at: lesson.scheduled_at,
+          duration_minutes: lesson.duration_minutes, meeting_link: lesson.meeting_link,
+          course: lesson.course ?? null,
+        })),
+      );
+
+      const merged = [...dbLessons, ...virtuals, ...individualVirtuals]
         .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
 
       setLessons(merged);
@@ -316,7 +321,7 @@ export default function Schema() {
             <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
               <div className="text-4xl mb-3">📅</div>
               <h3 className="font-semibold text-gray-900 mb-1">Inga lektioner inbokade</h3>
-              <p className="text-gray-400 text-sm">Lektioner syns här när du är anmäld till en kurs.</p>
+              <p className="text-gray-400 text-sm">Grupplektioner och individuella lektioner syns här när de har bokats.</p>
             </div>
           )}
         </>

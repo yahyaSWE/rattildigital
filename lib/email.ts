@@ -206,3 +206,47 @@ export async function sendApplicationStatusEmail({
   });
   if (error) throw new Error(`Beslutsmejlet kunde inte skickas: ${error.message}`);
 }
+
+export async function sendIndividualBookingEmail({
+  toEmail,
+  applicantName,
+  teacherName,
+  areaName,
+  scheduleText,
+  durationMinutes,
+  meetingLink,
+  passwordSetupLink,
+}: {
+  toEmail: string;
+  applicantName: string;
+  teacherName: string;
+  areaName: string;
+  scheduleText: string;
+  durationMinutes: number;
+  meetingLink: string;
+  passwordSetupLink: string | null;
+}) {
+  const resend = getResend();
+  if (!resend) throw new Error("RESEND_API_KEY saknas – bokningsmejlet kunde inte skickas");
+  const safeName = escapeHtml(applicantName);
+  const safeTeacher = escapeHtml(teacherName);
+  const safeArea = escapeHtml(areaName);
+  const safeSchedule = escapeHtml(scheduleText);
+  const safeMeetingLink = escapeHtml(meetingLink);
+  const safePasswordLink = passwordSetupLink ? escapeHtml(passwordSetupLink) : null;
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: toEmail,
+    subject: `Dina individuella lektioner i ${cleanHeader(areaName)} är bokade`,
+    html: `<div style="font-family:sans-serif;max-width:540px;margin:0 auto">
+      <h2 style="color:${BRAND.colors.primary}">Individuella lektioner bokade</h2>
+      <p>Assalamu alaikum ${safeName},</p>
+      <p>Dina återkommande lektioner i <strong>${safeArea}</strong> med <strong>${safeTeacher}</strong> är godkända.</p>
+      <p><strong>Tider:</strong> ${safeSchedule}<br/><strong>Längd:</strong> ${durationMinutes} minuter</p>
+      <p><a href="${safeMeetingLink}" style="color:${BRAND.colors.primary};font-weight:600">Öppna möteslänken</a></p>
+      ${safePasswordLink ? `<p><a href="${safePasswordLink}" style="display:inline-block;background:${BRAND.colors.primary};color:white;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Skapa lösenord</a></p><p style="font-size:12px;color:#999">Länken är giltig i 24 timmar.</p>` : ""}
+      <p>Du hittar även tider och möteslänk i elevportalen.</p>
+    </div>`,
+  });
+  if (error) throw new Error(`Bokningsmejlet kunde inte skickas: ${error.message}`);
+}

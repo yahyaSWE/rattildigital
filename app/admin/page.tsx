@@ -348,7 +348,7 @@ export default function AdminPanel() {
               <p className="text-xs text-gray-400">Hantera elever, kurser och lektioner</p>
             </div>
           </div>
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka till hemsidan</Link>
+          <div className="flex items-center gap-4"><Link href="/larare/individuella" className="text-sm font-semibold text-primary">Individuella lektioner</Link><Link href="/" className="text-sm text-gray-500 hover:text-gray-700">← Tillbaka till hemsidan</Link></div>
         </div>
       </div>
 
