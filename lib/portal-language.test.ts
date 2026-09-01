@@ -14,6 +14,7 @@ describe("portal languages", () => {
 
   it("translates dynamic teacher dashboard counters", () => {
     expect(translatePortalText("0 elever i dina kurser", "en")).toBe("0 students in your courses");
+    expect(translatePortalText("elever i dina kurser", "ar")).toBe("طلاب في دوراتك");
     expect(translatePortalText("Inga olästa", "ar")).toBe("لا توجد رسائل غير مقروءة");
     expect(translatePortalText("Inga väntande", "en")).toBe("None pending");
   });
