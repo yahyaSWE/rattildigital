@@ -6,16 +6,20 @@ type Props = {
   onMessage: (t: Profile) => void;
   onChangeRole: (id: string, role: "student" | "teacher") => void;
   onDelete: (id: string) => void;
+  onCreateTeacher: () => void;
 };
 
-export function TeachersTab({ students, courses, onMessage, onChangeRole, onDelete }: Props) {
+export function TeachersTab({ students, courses, onMessage, onChangeRole, onDelete, onCreateTeacher }: Props) {
   const teachers = students.filter((s) => s.role === "teacher");
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">Lärare ({teachers.length})</h2>
-        <p className="text-sm text-gray-400">Utse lärare via elevlistan eller skapa ett konto och ändra roll.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">Lärare ({teachers.length})</h2>
+          <p className="text-sm text-gray-400">Skapa ett lärarkonto direkt eller hantera befintliga lärare.</p>
+        </div>
+        <button onClick={onCreateTeacher} className="px-4 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-90" style={{ backgroundColor: "var(--primary)" }}>+ Skapa lärare</button>
       </div>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
@@ -29,7 +33,7 @@ export function TeachersTab({ students, courses, onMessage, onChangeRole, onDele
             </thead>
             <tbody className="divide-y divide-gray-50">
               {teachers.length === 0 ? (
-                <tr><td colSpan={3} className="px-6 py-10 text-center text-gray-400 text-sm">Inga lärare ännu. Gå till Elever-fliken och klicka &quot;→ Lärare&quot; på en användare.</td></tr>
+                <tr><td colSpan={3} className="px-6 py-10 text-center text-gray-400 text-sm">Inga lärare ännu. Klicka på &quot;Skapa lärare&quot; för att bjuda in den första.</td></tr>
               ) : teachers.map((t) => {
                 const teacherCourses = courses.filter((c) => c.teacher_id === t.id);
                 return (

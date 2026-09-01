@@ -156,6 +156,50 @@ export async function sendApprovalEmail({
   if (error) throw new Error(`Välkomstmejlet kunde inte skickas: ${error.message}`);
 }
 
+export async function sendTeacherInviteEmail({
+  toEmail,
+  teacherName,
+  passwordSetupLink,
+}: {
+  toEmail: string;
+  teacherName: string;
+  passwordSetupLink: string;
+}) {
+  const resend = getResend();
+  if (!resend) throw new Error("RESEND_API_KEY saknas – lärarinbjudan kunde inte skickas");
+  const safeTeacherName = escapeHtml(teacherName);
+  const safePasswordSetupLink = escapeHtml(passwordSetupLink);
+
+  const { error } = await resend.emails.send({
+    from: FROM,
+    to: toEmail,
+    subject: `Ditt lärarkonto hos ${BRAND.name}`,
+    html: `
+      <div style="font-family:sans-serif;max-width:540px;margin:0 auto">
+        <div style="background:linear-gradient(135deg,${BRAND.colors.primaryDark},${BRAND.colors.primary});padding:32px;border-radius:12px 12px 0 0;text-align:center">
+          <h1 style="color:white;margin:0;font-size:22px">${BRAND.name}</h1>
+          <p style="color:rgba(255,255,255,0.85);margin:6px 0 0">Välkommen som lärare</p>
+        </div>
+        <div style="padding:28px;background:#fff;border:1px solid #eee;border-radius:0 0 12px 12px">
+          <h2 style="color:${BRAND.colors.dark};margin-top:0">Assalamu alaikum, ${safeTeacherName}!</h2>
+          <p style="color:#555;line-height:1.6">Ett lärarkonto har skapats åt dig. Välj ett lösenord via knappen nedan för att logga in i lärarportalen.</p>
+          <div style="text-align:center;margin:28px 0">
+            <a href="${safePasswordSetupLink}"
+               style="display:inline-block;background:${BRAND.colors.primary};color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold">
+              Skapa lösenord och logga in
+            </a>
+          </div>
+          <p style="color:#999;font-size:12px;line-height:1.6">Länken är giltig i 24 timmar. Om länken hinner gå ut kan du begära en ny lösenordslänk från inloggningssidan.</p>
+          <p style="color:#999;font-size:12px;text-align:center;margin-top:24px">
+            <strong>${BRAND.name}</strong> · ${BRAND.email}
+          </p>
+        </div>
+      </div>
+    `,
+  });
+  if (error) throw new Error(`Lärarinbjudan kunde inte skickas: ${error.message}`);
+}
+
 export async function sendApplicationStatusEmail({
   toEmail,
   applicantName,

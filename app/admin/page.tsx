@@ -61,6 +61,7 @@ export default function AdminPanel() {
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
+  const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [showMsgModal, setShowMsgModal] = useState(false);
   const [editCourse, setEditCourse] = useState<Course | null>(null);
@@ -70,6 +71,7 @@ export default function AdminPanel() {
   const [courseForm, setCourseForm] = useState({ title: "", description: "", level: "beginner", price_sek: "", sessions_per_week: "2", duration_weeks: "", max_participants: "", teacher_id: "", meeting_link: "", is_popular: false, weekly_schedule: defaultDays() });
   const [bulkForm, setBulkForm] = useState({ course_id: "", title_prefix: "Lektion", start_date: "", weeks: "4", duration_minutes: "60", meeting_link: "", days: defaultDays() });
   const [studentForm, setStudentForm] = useState({ email: "", full_name: "", course_id: "", expand_capacity: false });
+  const [teacherForm, setTeacherForm] = useState({ email: "", full_name: "" });
   const [enrollForm, setEnrollForm] = useState({ student_id: "", course_id: "", expand_capacity: false });
   const [msgForm, setMsgForm] = useState({ subject: "", content: "" });
   const [materialForm, setMaterialForm] = useState({ title: "", course_id: "", lesson_id: "", type: "pdf", file: null as File | null });
@@ -191,10 +193,33 @@ export default function AdminPanel() {
     }
     else { const d = await res.json(); toast(d.error ?? "Något gick fel."); }
   };
+  const saveTeacher = async (confirmExisting = false) => {
+    setSaving(true);
+    const res = await fetch("/api/admin/teachers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...teacherForm, confirm_existing: confirmExisting }),
+    });
+    const result = await res.json();
+    setSaving(false);
+    if (res.ok) {
+      setShowTeacherModal(false);
+      await load();
+      toast(result.promoted
+        ? "Elevkontot har ändrats till lärare och ett nytt inloggningsmejl har skickats."
+        : "Lärarkontot är klart och inloggningsmejlet har skickats.");
+      return;
+    }
+    if (res.status === 409 && result.code === "existing_student") {
+      if (confirm(result.error)) await saveTeacher(true);
+      return;
+    }
+    toast(result.error ?? "Kunde inte skapa läraren.");
+  };
   const deleteStudent = async (id: string) => {
-    if (!confirm("Ta bort eleven permanent?")) return;
+    if (!confirm("Ta bort användaren permanent?")) return;
     await fetch("/api/admin/students", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
-    load(); toast("Elev borttagen.");
+    load(); toast("Användaren är borttagen.");
   };
   const changeRole = async (id: string, role: "student" | "teacher") => {
     const res = await fetch("/api/admin/students", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, role }) });
@@ -369,7 +394,7 @@ export default function AdminPanel() {
           <StudentsTab students={students} enrollments={enrollments} onNewStudent={() => { setStudentForm({ email: "", full_name: "", course_id: "", expand_capacity: false }); setShowStudentModal(true); }} onEnroll={() => { setEnrollForm({ student_id: "", course_id: "", expand_capacity: false }); setShowEnrollModal(true); }} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} onRemoveEnroll={removeEnroll} />
         )}
         {tab === "teachers" && (
-          <TeachersTab students={students} courses={courses} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} />
+          <TeachersTab students={students} courses={courses} onMessage={openMsg} onChangeRole={changeRole} onDelete={deleteStudent} onCreateTeacher={() => { setTeacherForm({ email: "", full_name: "" }); setShowTeacherModal(true); }} />
         )}
         {tab === "courses" && (
           <CoursesTab courses={courses} enrollments={enrollments} onCreateCourse={openCreateCourse} onEditCourse={openEditCourse} onDeleteCourse={deleteCourse} onBulkLessons={(id) => { setSelectedCourseId(id); openBulkModal(id); }} />
@@ -570,6 +595,21 @@ export default function AdminPanel() {
             <div className="flex gap-2 pt-2">
               <button onClick={saveStudent} disabled={saving || !studentForm.full_name.trim() || !studentForm.email.trim() || !studentForm.course_id || (studentCourseFull && !studentForm.expand_capacity)} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Skapar..." : "Skapa och skicka inloggning"}</button>
               <button onClick={() => setShowStudentModal(false)} className={btnSecondary}>Avbryt</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
+      {/* Teacher Modal */}
+      {showTeacherModal && (
+        <Modal title="Ny lärare" onClose={() => setShowTeacherModal(false)}>
+          <div className="space-y-4">
+            <Field label="Fullständigt namn *"><input className={inputCls} value={teacherForm.full_name} onChange={(e) => setTeacherForm({ ...teacherForm, full_name: e.target.value })} placeholder="Ahmed Hassan" /></Field>
+            <Field label="E-postadress *"><input className={inputCls} type="email" value={teacherForm.email} onChange={(e) => setTeacherForm({ ...teacherForm, email: e.target.value })} placeholder="ahmed@example.com" /></Field>
+            <p className="text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2">Kontot skapas direkt som lärare utan elevprofil eller kursplats. Läraren får ett mejl med en säker länk för att välja lösenord och skickas därefter till lärarportalen.</p>
+            <div className="flex gap-2 pt-2">
+              <button onClick={() => void saveTeacher()} disabled={saving || !teacherForm.full_name.trim() || !teacherForm.email.trim()} className={`flex-1 ${btnPrimary}`} style={{ backgroundColor: "var(--primary)" }}>{saving ? "Skapar..." : "Skapa och skicka inloggning"}</button>
+              <button onClick={() => setShowTeacherModal(false)} className={btnSecondary}>Avbryt</button>
             </div>
           </div>
         </Modal>
