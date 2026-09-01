@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PortalLanguageProvider, PortalLanguageSwitcher, usePortalLanguage } from "@/lib/portal-language";
 
 const navItems = [
   {
@@ -72,7 +73,8 @@ const navItems = [
   },
 ];
 
-export default function LarareLayout({ children }: { children: React.ReactNode }) {
+function LarareLayoutContent({ children }: { children: React.ReactNode }) {
+  const { language } = usePortalLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [userName, setUserName] = useState("");
@@ -131,6 +133,7 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
       </nav>
 
       <div className="px-3 py-4 border-t border-gray-100 space-y-1">
+        <PortalLanguageSwitcher />
         <div className="px-3 py-2 mb-1">
           <p className="text-xs font-medium text-gray-400">Inloggad som</p>
           <p className="text-sm font-medium text-gray-700 truncate">{userName}</p>
@@ -159,7 +162,7 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
-          <div className="relative z-50 flex flex-col h-full w-64">
+          <div className={`relative z-50 flex flex-col h-full w-64 ${language === "ar" ? "ml-auto" : ""}`}>
             {renderSidebar()}
           </div>
         </div>
@@ -175,10 +178,15 @@ export default function LarareLayout({ children }: { children: React.ReactNode }
             </svg>
           </button>
           <span className="font-semibold text-gray-900 text-sm">Lärarportal</span>
+          <div className="ml-auto"><PortalLanguageSwitcher compact /></div>
         </div>
 
         <main className="flex-1 p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
+}
+
+export default function LarareLayout({ children }: { children: React.ReactNode }) {
+  return <PortalLanguageProvider><LarareLayoutContent>{children}</LarareLayoutContent></PortalLanguageProvider>;
 }

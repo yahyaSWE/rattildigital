@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { BrandLogo } from "@/components/BrandLogo";
+import { PortalLanguageProvider, PortalLanguageSwitcher, usePortalLanguage } from "@/lib/portal-language";
 
 const navItems = [
   {
@@ -63,7 +64,8 @@ const navItems = [
   },
 ];
 
-export default function PortalLayout({ children }: { children: React.ReactNode }) {
+function PortalLayoutContent({ children }: { children: React.ReactNode }) {
+  const { language } = usePortalLanguage();
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -98,8 +100,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
   return (
     <div className="min-h-screen bg-gray-50 flex">
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-100 shadow-sm transform transition-transform duration-200 lg:relative lg:translate-x-0 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 ${language === "ar" ? "right-0 border-l" : "left-0 border-r"} z-50 w-64 bg-white border-gray-100 shadow-sm transform transition-transform duration-200 lg:relative lg:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : language === "ar" ? "translate-x-full" : "-translate-x-full"
         }`}
       >
         <div className="p-4 border-b border-gray-100">
@@ -130,6 +132,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
+          <PortalLanguageSwitcher />
           <div className="flex items-center gap-3 px-3 py-2 mb-2">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style={{ backgroundColor: "var(--primary)" }}>
               {userInitial}
@@ -161,6 +164,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
           </button>
           <div className="lg:hidden" />
           <div className="flex items-center gap-3">
+            <PortalLanguageSwitcher compact />
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-semibold" style={{ backgroundColor: "var(--primary)" }}>
               {userInitial}
             </div>
@@ -171,4 +175,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
       </div>
     </div>
   );
+}
+
+export default function PortalLayout({ children }: { children: React.ReactNode }) {
+  return <PortalLanguageProvider><PortalLayoutContent>{children}</PortalLayoutContent></PortalLanguageProvider>;
 }
