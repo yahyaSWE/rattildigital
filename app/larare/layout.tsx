@@ -105,7 +105,7 @@ function LarareLayoutContent({ children }: { children: React.ReactNode }) {
     href === "/larare" ? pathname === "/larare" : pathname.startsWith(href);
 
   const renderSidebar = () => (
-    <aside className="flex flex-col h-full bg-white border-r border-gray-100 w-64">
+    <aside className={`flex flex-col h-full bg-white border-gray-100 w-64 ${language === "ar" ? "border-l" : "border-r"}`}>
       <div className="px-5 py-4 border-b border-gray-100">
         <Link href="/" className="flex flex-col items-center" aria-label="Rattil Digital Academy – startsida">
           <BrandLogo className="h-20 w-auto" priority />
@@ -154,7 +154,7 @@ function LarareLayoutContent({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       {/* Desktop sidebar */}
-      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0">
+      <div className={`hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 ${language === "ar" ? "lg:right-0" : "lg:left-0"}`}>
         {renderSidebar()}
       </div>
 
@@ -169,7 +169,7 @@ function LarareLayoutContent({ children }: { children: React.ReactNode }) {
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:pl-64 flex flex-col min-h-screen overflow-auto">
+      <div className={`flex-1 flex flex-col min-h-screen overflow-auto ${language === "ar" ? "lg:pr-64" : "lg:pl-64"}`}>
         {/* Mobile top bar */}
         <div className="lg:hidden bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
           <button onClick={() => setMobileOpen(true)} className="text-gray-500">
