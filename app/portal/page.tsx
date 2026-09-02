@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { expandWeeklySchedule, type WeeklySchedule } from "@/lib/lessons";
+import { expandIndividualBooking, expandWeeklySchedule, type WeeklySchedule } from "@/lib/lessons";
 
 type DashboardEnrollment = {
   id: string;
@@ -21,6 +21,18 @@ type DashboardLesson = {
   scheduled_at: string | null;
   duration_minutes: number;
   meeting_link: string | null;
+  course?: { title: string } | null;
+};
+
+type DashboardIndividualBooking = {
+  id: string;
+  area: string;
+  starts_on: string;
+  duration_minutes: number;
+  meeting_link: string | null;
+  teacher: { full_name?: string | null } | null;
+  slots: Array<{ weekday: number; start_time: string }> | null;
+  exceptions: Array<{ original_date: string; replacement_start: string | null; status: string }> | null;
 };
 
 export default async function PortalDashboard() {
@@ -69,6 +81,12 @@ export default async function PortalDashboard() {
   const now = new Date();
   const horizon = new Date(now.getTime() + 60 * 86_400_000);
 
+  const { data: individualBookingRows } = await supabase
+    .from("individual_bookings")
+    .select("id, area, starts_on, duration_minutes, meeting_link, teacher:profiles!teacher_id(full_name), slots:individual_booking_slots(weekday, start_time), exceptions:individual_lesson_exceptions(original_date, replacement_start, status)")
+    .eq("student_id", user.id)
+    .eq("status", "active");
+
   const [{ data: dbLessons }, { data: messages }, { count: completedCount }] =
     await Promise.all([
       courseIds.length > 0
@@ -116,9 +134,12 @@ export default async function PortalDashboard() {
       4,
     );
   });
+  const individualLessons = ((individualBookingRows ?? []) as unknown as DashboardIndividualBooking[])
+    .flatMap((booking) => expandIndividualBooking(booking, now, horizon));
   const upcomingLessons: DashboardLesson[] = [
     ...((dbLessons ?? []) as unknown as DashboardLesson[]),
     ...virtualLessons,
+    ...individualLessons,
   ]
     .sort((a, b) => new Date(a.scheduled_at ?? 0).getTime() - new Date(b.scheduled_at ?? 0).getTime())
     .slice(0, 4);
@@ -296,10 +317,10 @@ export default async function PortalDashboard() {
                 const d = lesson.scheduled_at ? new Date(lesson.scheduled_at) : null;
                 const end = d ? new Date(d.getTime() + lesson.duration_minutes * 60000) : null;
                 const dateStr = d
-                  ? d.toLocaleDateString("sv-SE", { weekday: "long", day: "numeric", month: "long" })
+                  ? d.toLocaleDateString("sv-SE", { timeZone: "Europe/Stockholm", weekday: "long", day: "numeric", month: "long" })
                   : "–";
                 const timeStr = d
-                  ? `${d.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}–${end!.toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}`
+                  ? `${d.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm", hour: "2-digit", minute: "2-digit" })}–${end!.toLocaleTimeString("sv-SE", { timeZone: "Europe/Stockholm", hour: "2-digit", minute: "2-digit" })}`
                   : "";
                 return (
                   <div key={lesson.id} className="px-6 py-4 flex items-center gap-4">
@@ -309,8 +330,12 @@ export default async function PortalDashboard() {
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{lesson.title}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-gray-900 truncate">{lesson.title}</p>
+                        {lesson.id.startsWith("individual-") && <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Individuell</span>}
+                      </div>
                       <p className="text-xs text-gray-400">{dateStr} · {timeStr}</p>
+                      {lesson.id.startsWith("individual-") && lesson.course?.title && <p className="text-xs text-gray-500 mt-0.5">{lesson.course.title}</p>}
                     </div>
                     {lesson.meeting_link && (
                       <a href={lesson.meeting_link} target="_blank" rel="noopener noreferrer"

@@ -20,6 +20,11 @@ describe("portal languages", () => {
     expect(translatePortalText("Se hela schemat →", "ar")).toBe("عرض الجدول كاملًا →");
   });
 
+  it("translates the individual lesson section in the student portal", () => {
+    expect(translatePortalText("Mina individuella lektioner", "en")).toBe("My individual lessons");
+    expect(translatePortalText("Gå med i lektion", "ar")).toBe("الانضمام إلى الدرس");
+  });
+
   it("keeps authored content that has no interface translation", () => {
     expect(translatePortalText("Surah Al-Fatiha", "ar")).toBe("Surah Al-Fatiha");
   });

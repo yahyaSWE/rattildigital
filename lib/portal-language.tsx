@@ -7,6 +7,7 @@ export type PortalLanguage = "sv" | "en" | "ar";
 
 const translations: Record<"en" | "ar", Record<string, string>> = {
   en: {
+    "Gruppkurser":"Group courses", "Mina individuella lektioner":"My individual lessons", "Dina personliga återkommande lektioner med läraren.":"Your recurring one-to-one lessons with your teacher.", "Du har inga aktiva individuella lektioner.":"You have no active individual lessons.", "Ansök om individuell lektion":"Apply for an individual lesson", "Ej angiven":"Not specified", "Visa i schema →":"View in schedule →", "Ingen återkommande tid angiven":"No recurring time specified", "Gå med i lektion":"Join lesson",
     "Inga olästa":"None unread", "Inga väntande":"None pending", "elever i dina kurser":"students in your courses", "Välkommen tillbaka":"Welcome back", "Se hela schemat":"View full schedule", "Inga kommande lektioner inbokade ännu.":"No upcoming lessons have been scheduled yet.", "Se tillgängliga kurser":"View available courses",
     "Översikt":"Overview", "Mina kurser":"My courses", "Schema":"Schedule", "Lektionsmaterial":"Lesson material", "Meddelanden":"Messages", "Min profil":"My profile",
     "Elevportal":"Student portal", "Lärarportal":"Teacher portal", "Inloggad som":"Signed in as", "Logga ut":"Log out", "Språk":"Language",
@@ -26,6 +27,7 @@ const translations: Record<"en" | "ar", Record<string, string>> = {
     "Januari":"January", "Februari":"February", "Mars":"March", "April":"April", "Maj":"May", "Juni":"June", "Juli":"July", "Augusti":"August", "September":"September", "Oktober":"October", "November":"November", "December":"December", "Mån":"Mon", "Tis":"Tue", "Ons":"Wed", "Tor":"Thu", "Fre":"Fri", "Lör":"Sat", "Sön":"Sun", "Måndag":"Monday", "Tisdag":"Tuesday", "Onsdag":"Wednesday", "Torsdag":"Thursday", "Fredag":"Friday", "Lördag":"Saturday", "Söndag":"Sunday", "Igår":"Yesterday"
   },
   ar: {
+    "Gruppkurser":"دورات جماعية", "Mina individuella lektioner":"دروسي الفردية", "Dina personliga återkommande lektioner med läraren.":"دروسك الفردية المتكررة مع المعلم.", "Du har inga aktiva individuella lektioner.":"ليس لديك دروس فردية نشطة.", "Ansök om individuell lektion":"التقديم على درس فردي", "Ej angiven":"غير محدد", "Visa i schema →":"عرض في الجدول ←", "Ingen återkommande tid angiven":"لم يتم تحديد وقت متكرر", "Gå med i lektion":"الانضمام إلى الدرس",
     "Inga olästa":"لا توجد رسائل غير مقروءة", "Inga väntande":"لا توجد طلبات معلقة", "elever i dina kurser":"طلاب في دوراتك", "Välkommen tillbaka":"مرحبًا بعودتك", "Se hela schemat":"عرض الجدول كاملًا", "Inga kommande lektioner inbokade ännu.":"لا توجد دروس قادمة مجدولة بعد.", "Se tillgängliga kurser":"عرض الدورات المتاحة",
     "Översikt":"نظرة عامة", "Mina kurser":"دوراتي", "Schema":"الجدول", "Lektionsmaterial":"مواد الدروس", "Meddelanden":"الرسائل", "Min profil":"ملفي الشخصي",
     "Elevportal":"بوابة الطالب", "Lärarportal":"بوابة المعلم", "Inloggad som":"مسجل الدخول باسم", "Logga ut":"تسجيل الخروج", "Språk":"اللغة",
