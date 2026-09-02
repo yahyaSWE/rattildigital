@@ -6,7 +6,6 @@ const pageLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/programs", label: "Programs" },
-  { href: "/teachers", label: "Teachers" },
   { href: "/contact", label: "Contact" },
   { href: "/logga-in", label: "Student Portal" },
 ];
